@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GNCF Youth & Ypro - Attendance & Points</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Friendly, warm color palette */
+            --primary: #FF705B;
+            /* Warm Coral */
+            --primary-hover: #E65A45;
+            --secondary: #48A9A6;
+            /* Friendly Teal */
+            --bg-color: #FFF9F7;
+            /* Very soft warm white */
+            --card-bg: #FFFFFF;
+            --text-main: #2D3748;
+            --text-muted: #718096;
+            --border: #EDF2F7;
+            --present: #48A9A6;
+            /* Teal for present */
+            --late: #F6AD55;
+            /* Soft Orange */
+            --absent: #FC8181;
+            /* Soft Red */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Header & Layout --- */
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem 5%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1.2rem;
+        }
+
+        /* --- Buttons & Inputs --- */
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 4px 10px rgba(255, 112, 91, 0.2);
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.btn-danger {
+            background-color: #FFF5F5;
+            color: var(--absent);
+            box-shadow: none;
+            border: 1px solid #FED7D7;
+        }
+
+        button.btn-danger:hover {
+            background-color: #FED7D7;
+        }
+
+        button.btn-outline {
+            background-color: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: none;
+        }
+
+        button.btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        button.btn-secondary {
+            background-color: var(--border);
+            color: var(--text-main);
+            box-shadow: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+        }
+
+        button.btn-secondary:hover {
+            background-color: #E2E8F0;
+        }
+
+        button.active-sort {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #FAFAFA;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            background: white;
+        }
+
+        /* --- Cards --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.8rem;
+            border: 1px solid #F0F4F8;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px dashed var(--border);
+        }
+
+        .card-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- Admin Navigation --- */
+        .admin-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            background: var(--card-bg);
+            padding: 0.5rem;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            overflow-x: auto;
+        }
+
+        .admin-nav button {
+            flex: 1;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 10px;
+            box-shadow: none;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .admin-nav button.active {
+            background: var(--bg-color);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* --- Custom Segmented Radio Buttons --- */
+        .attendance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #F0F4F8;
+        }
+
+        .attendance-row:last-child {
+            border-bottom: none;
+        }
+
+        .member-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .member-code {
+            font-size: 0.8rem;
+            color: var(--primary);
+            background: #FFF5F5;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-left: 8px;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        .status-toggle {
+            display: flex;
+            background: #F7FAFC;
+            border-radius: 10px;
+            padding: 4px;
+            gap: 2px;
+        }
+
+        .status-toggle label {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .status-toggle input[type="radio"] {
+            display: none;
+        }
+
+        .status-toggle input[value="Present"]:checked+label {
+            background: var(--present);
+            color: white;
+            box-shadow: 0 2px 5px rgba(72, 169, 166, 0.3);
+        }
+
+        .status-toggle input[value="Late"]:checked+label {
+            background: var(--late);
+            color: white;
+            box-shadow: 0 2px 5px rgba(246, 173, 85, 0.3);
+        }
+
+        .status-toggle input[value="Absent"]:checked+label {
+            background: var(--absent);
+            color: white;
+            box-shadow: 0 2px 5px rgba(252, 129, 129, 0.3);
+        }
+
+        /* --- Badges & Lookups --- */
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.present {
+            background: #E6FFFA;
+            color: #285E61;
+        }
+
+        .badge.late {
+            background: #FFFAF0;
+            color: #9C4221;
+        }
+
+        .badge.absent {
+            background: #FFF5F5;
+            color: #9B2C2C;
+        }
+
+        .flex-group {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-box {
+            text-align: center;
+            background: #FAFAFA;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .leaderboard-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        #personalResult {
+            margin-top: 1.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🌟 GNCF Youth & YPro Attendance Checker</h1>
+        <button id="authBtn" class="btn-outline" onclick="toggleAdmin()">Admin Login</button>
+    </header>
+
+    <div class="container">
+
+        <div id="visitorView">
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>📊 Ministry Overview</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Total points accumulated by the youth!</p>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="stat-box">
+                        <div class="stat-number" id="globalTotalPoints">0</div>
+                        <div style="font-weight: 600; color: var(--text-muted);">Total Present Marks</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="globalTotalSessions">0</div>
+                        <div style="font-weight: 600; color: var(--text-muted);">Sessions Recorded</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔍 My Attendance Record</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Enter your unique code to see your points
+                        and attendance history.</p>
+                </div>
+                <div class="flex-group">
+                    <input type="text" id="visitorCode" placeholder="Enter your 6-character code (e.g., A1B2C3)"
+                        style="text-transform: uppercase;">
+                    <button onclick="lookupRecord()">Check Record</button>
+                </div>
+
+                <div id="personalResult" class="hidden">
+                </div>
+            </div>
+        </div>
+
+        <div id="adminView" class="hidden">
+            <div class="admin-nav" id="adminTabs">
+                <button class="active" onclick="switchAdminTab('leaderboard', this)">🏆 Leaderboard</button>
+                <button onclick="switchAdminTab('attendance', this)">📝 Mark Attendance</button>
+                <button onclick="switchAdminTab('members', this)">👥 Members</button>
+                <button onclick="switchAdminTab('categories', this)">📁 Categories</button>
+            </div>
+
+            <div id="tab-leaderboard" class="card">
+                <div class="card-header">
+                    <h2>🏆 Points Leaderboard</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">1 Present = 1 Point. Late and Absent = 0
+                        Points.</p>
+                </div>
+
+                <div class="leaderboard-controls">
+                    <button class="btn-secondary active-sort" id="sort-pts-desc"
+                        onclick="renderLeaderboard('pts-desc')">Highest Points</button>
+                    <button class="btn-secondary" id="sort-pts-asc" onclick="renderLeaderboard('pts-asc')">Lowest
+                        Points</button>
+                    <button class="btn-secondary" id="sort-name" onclick="renderLeaderboard('name')">Sort by
+                        Name</button>
+                </div>
+
+                <div id="leaderboardList"></div>
+            </div>
+
+            <div id="tab-attendance" class="card hidden">
+                <div class="card-header">
+                    <h2>📝 Record Session</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Everyone is marked Present by default. Only
+                        adjust those who are Late or Absent.</p>
+                </div>
+                <div class="flex-group">
+                    <input type="date" id="attDate" required>
+                    <select id="attCategory"></select>
+                </div>
+                <div id="attendanceChecklist" style="margin-top: 1.5rem;">
+                </div>
+                <button style="margin-top: 2rem; width: 100%; padding: 1rem; font-size: 1.1rem;"
+                    onclick="saveAttendance()">Save Attendance Record</button>
+            </div>
+
+            <div id="tab-members" class="card hidden">
+                <div class="card-header">
+                    <h2>👥 Member Directory</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Share the unique codes with members so they
+                        can check their points.</p>
+                </div>
+                <div class="flex-group">
+                    <input type="text" id="newMemberName" placeholder="Enter full name (e.g. Juan Dela Cruz)">
+                    <button onclick="addMember()">Add Member</button>
+                </div>
+                <div id="membersList" style="margin-top: 1rem;"></div>
+            </div>
+
+            <div id="tab-categories" class="card hidden">
+                <div class="card-header">
+                    <h2>📁 Ministry Categories</h2>
+                </div>
+                <div class="flex-group">
+                    <input type="text" id="newCategoryName" placeholder="E.g., Youth Camp">
+                    <button onclick="addCategory()">Add</button>
+                </div>
+                <div id="categoriesList" style="margin-top: 1rem;"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA INITIALIZATION ---
+        // Using _v3 keys to ensure a clean slate for the new data structure (members as objects with codes)
+        let members = JSON.parse(localStorage.getItem('youth_members_v3')) || [];
+        let categories = JSON.parse(localStorage.getItem('youth_categories_v3')) || ['Sunday School', 'Worship Service', 'Bible Study'];
+        let records = JSON.parse(localStorage.getItem('youth_records_v3')) || [];
+
+        let isAdmin = false;
+        let currentSort = 'pts-desc';
+
+        document.getElementById('attDate').valueAsDate = new Date();
+
+        // --- HELPER FUNCTIONS ---
+        function generateCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function calculatePoints() {
+            let scores = {};
+            members.forEach(m => scores[m.code] = 0);
+
+            records.forEach(record => {
+                record.attendances.forEach(att => {
+                    // We map by code or name depending on how it was saved. 
+                    // To be safe, we map by name if code isn't in attendance record directly.
+                    const member = members.find(m => m.name === att.name);
+                    if (member && att.status === 'Present') {
+                        scores[member.code] += 1;
+                    }
+                });
+            });
+            return scores;
+        }
+
+        function saveData() {
+            localStorage.setItem('youth_members_v3', JSON.stringify(members));
+            localStorage.setItem('youth_categories_v3', JSON.stringify(categories));
+            localStorage.setItem('youth_records_v3', JSON.stringify(records));
+            renderAll();
+        }
+
+        // --- UI RENDERING ---
+        function renderAll() {
+            renderGlobalStats();
+            if (isAdmin) {
+                renderLeaderboard(currentSort);
+                renderCategories();
+                renderMembers();
+                renderAttendanceChecklist();
+            }
+        }
+
+        function renderGlobalStats() {
+            const totalSessions = records.length;
+            let totalPresents = 0;
+
+            records.forEach(r => {
+                r.attendances.forEach(a => {
+                    if (a.status === 'Present') totalPresents++;
+                });
+            });
+
+            document.getElementById('globalTotalSessions').innerText = totalSessions;
+            document.getElementById('globalTotalPoints').innerText = totalPresents;
+        }
+
+        // --- VISITOR LOOKUP ---
+        function lookupRecord() {
+            const input = document.getElementById('visitorCode').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('personalResult');
+
+            if (!input) return;
+
+            const member = members.find(m => m.code === input);
+
+            if (!member) {
+                resultDiv.innerHTML = `<p style="color: var(--absent); font-weight: 600; text-align: center; padding: 1rem; background: #FFF5F5; border-radius: 12px;">❌ Invalid code. Please try again or ask an Admin.</p>`;
+                resultDiv.classList.remove('hidden');
+                return;
+            }
+
+            const scores = calculatePoints();
+            const myPoints = scores[member.code];
+
+            // Get recent history
+            let historyHTML = '';
+            let myRecords = [];
+
+            records.forEach(r => {
+                const myAtt = r.attendances.find(a => a.name === member.name);
+                if (myAtt) {
+                    myRecords.push({ date: r.date, category: r.category, status: myAtt.status });
+                }
+            });
+
+            myRecords.sort((a, b) => new Date(b.date) - new Date(a.date)); // Newest first
+            const recent = myRecords.slice(0, 5); // Show last 5
+
+            if (recent.length === 0) {
+                historyHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No attendance records found yet.</p>';
+            } else {
+                recent.forEach(r => {
+                    const badgeClass = r.status.toLowerCase();
+                    const displayDate = new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    historyHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px dashed var(--border);">
+                            <div>
+                                <div style="font-weight: 600;">${r.category}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">${displayDate}</div>
+                            </div>
+                            <span class="badge ${badgeClass}">${r.status}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            resultDiv.innerHTML = `
+                <div style="background: #FAFAFA; border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem;">
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.2rem;">Hello, ${member.name}! 👋</h3>
+                    <div style="display: inline-block; background: var(--secondary); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; margin-bottom: 1.5rem;">
+                        Total Points: ${myPoints}
+                    </div>
+                    
+                    <h4 style="margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-muted);">Recent History</h4>
+                    ${historyHTML}
+                </div>
+            `;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // --- ADMIN AUTH & TABS ---
+        function toggleAdmin() {
+            const btn = document.getElementById('authBtn');
+            if (isAdmin) {
+                isAdmin = false;
+                btn.innerText = 'Admin Login';
+                btn.className = 'btn-outline';
+                document.getElementById('adminView').classList.add('hidden');
+                document.getElementById('visitorView').classList.remove('hidden');
+
+                // Clear visitor search
+                document.getElementById('visitorCode').value = '';
+                document.getElementById('personalResult').classList.add('hidden');
+                renderGlobalStats();
+            } else {
+                const pass = prompt("Enter Admin Password (default is 'admin'):");
+                if (pass === "admin") {
+                    isAdmin = true;
+                    btn.innerText = 'Exit Admin';
+                    btn.className = '';
+                    document.getElementById('adminView').classList.remove('hidden');
+                    document.getElementById('visitorView').classList.add('hidden');
+                    renderAll();
+                } else if (pass !== null) {
+                    alert("Incorrect Password!");
+                }
+            }
+        }
+
+        function switchAdminTab(tab, btnElement) {
+            document.getElementById('tab-leaderboard').classList.add('hidden');
+            document.getElementById('tab-attendance').classList.add('hidden');
+            document.getElementById('tab-members').classList.add('hidden');
+            document.getElementById('tab-categories').classList.add('hidden');
+
+            const buttons = document.getElementById('adminTabs').getElementsByTagName('button');
+            for (let btn of buttons) { btn.classList.remove('active'); }
+
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            btnElement.classList.add('active');
+        }
+
+        // --- LEADERBOARD ---
+        function renderLeaderboard(sortType = currentSort) {
+            currentSort = sortType;
+
+            // Update active state of sort buttons
+            ['pts-desc', 'pts-asc', 'name'].forEach(id => {
+                document.getElementById(`sort-${id}`).classList.remove('active-sort');
+            });
+            document.getElementById(`sort-${sortType}`).classList.add('active-sort');
+
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '';
+
+            if (members.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted);">No members added yet.</p>';
+                return;
+            }
+
+            const scores = calculatePoints();
+            let leaderboardData = members.map(m => ({
+                name: m.name,
+                code: m.code,
+                points: scores[m.code]
+            }));
+
+            // Sort logic
+            if (sortType === 'name') {
+                leaderboardData.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sortType === 'pts-asc') {
+                leaderboardData.sort((a, b) => a.points - b.points);
+            } else {
+                leaderboardData.sort((a, b) => b.points - a.points); // desc default
+            }
+
+            leaderboardData.forEach((item, index) => {
+                // Add trophy to top 3 if sorted by points descending
+                let rankIcon = '';
+                if (sortType === 'pts-desc' && item.points > 0) {
+                    if (index === 0) rankIcon = '🥇 ';
+                    else if (index === 1) rankIcon = '🥈 ';
+                    else if (index === 2) rankIcon = '🥉 ';
+                }
+
+                list.innerHTML += `
+                    <div class="attendance-row" style="background: #FAFAFA; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border);">
+                        <div>
+                            <span style="font-size: 1.1rem;">${rankIcon}</span>
+                            <span class="member-name">${item.name}</span>
+                        </div>
+                        <div style="font-weight: 700; color: var(--primary); background: #FFF5F5; padding: 0.4rem 1rem; border-radius: 999px;">
+                            ${item.points} pts
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- ATTENDANCE MANAGEMENT ---
+        function renderAttendanceChecklist() {
+            const container = document.getElementById('attendanceChecklist');
+            container.innerHTML = '';
+
+            if (members.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align:center; padding: 2rem 0;">No members in directory.</p>';
+                return;
+            }
+
+            // Sort alphabetically for marking attendance
+            let sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedMembers.forEach((member, index) => {
+                container.innerHTML += `
+                    <div class="attendance-row">
+                        <span class="member-name">${member.name}</span>
+                        <div class="status-toggle">
+                            <input type="radio" id="present_${index}" name="status_${member.code}" value="Present" checked>
+                            <label for="present_${index}">Present</label>
+                            
+                            <input type="radio" id="late_${index}" name="status_${member.code}" value="Late">
+                            <label for="late_${index}">Late</label>
+                            
+                            <input type="radio" id="absent_${index}" name="status_${member.code}" value="Absent">
+                            <label for="absent_${index}">Absent</label>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function saveAttendance() {
+            const date = document.getElementById('attDate').value;
+            const category = document.getElementById('attCategory').value;
+
+            if (!date || !category) {
+                alert("Please select a date and ministry category.");
+                return;
+            }
+
+            if (members.length === 0) return;
+
+            const attendances = [];
+
+            members.forEach(member => {
+                const selectedStatus = document.querySelector(`input[name="status_${member.code}"]:checked`).value;
+                attendances.push({
+                    name: member.name, // storing name for historical context
+                    status: selectedStatus
+                });
+            });
+
+            const existingIndex = records.findIndex(r => r.date === date && r.category === category);
+
+            if (existingIndex >= 0) {
+                if (confirm("A record for this date and category already exists. Overwrite?")) {
+                    records[existingIndex].attendances = attendances;
+                } else {
+                    return;
+                }
+            } else {
+                records.push({ date, category, attendances });
+            }
+
+            saveData();
+            renderAttendanceChecklist(); // Reset UI back to all present
+            alert(`Record saved! Points have been updated.`);
+        }
+
+        // --- CATEGORY MANAGEMENT ---
+        function renderCategories() {
+            const list = document.getElementById('categoriesList');
+            const select = document.getElementById('attCategory');
+            list.innerHTML = '';
+            select.innerHTML = '';
+
+            categories.forEach((cat, index) => {
+                select.innerHTML += `<option value="${cat}">${cat}</option>`;
+                list.innerHTML += `
+                    <div class="attendance-row">
+                        <span class="member-name">${cat}</span>
+                        <button class="btn-danger" onclick="deleteCategory(${index})">Delete</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addCategory() {
+            const input = document.getElementById('newCategoryName');
+            const val = input.value.trim();
+            if (val && !categories.includes(val)) {
+                categories.push(val);
+                input.value = '';
+                saveData();
+            }
+        }
+
+        function deleteCategory(index) {
+            if (confirm("Delete this category?")) {
+                categories.splice(index, 1);
+                saveData();
+            }
+        }
+
+        // --- MEMBER MANAGEMENT ---
+        function renderMembers() {
+            const list = document.getElementById('membersList');
+            list.innerHTML = '';
+
+            let sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedMembers.forEach((member) => {
+                list.innerHTML += `
+                    <div class="attendance-row">
+                        <div>
+                            <span class="member-name">${member.name}</span>
+                            <span class="member-code">Code: ${member.code}</span>
+                        </div>
+                        <button class="btn-danger" onclick="deleteMember('${member.code}')">Remove</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addMember() {
+            const input = document.getElementById('newMemberName');
+            const val = input.value.trim();
+
+            // Check if name exists
+            if (val && !members.find(m => m.name.toLowerCase() === val.toLowerCase())) {
+                members.push({ name: val, code: generateCode() });
+                input.value = '';
+                saveData();
+            } else if (val) {
+                alert("Member already exists!");
+            }
+        }
+
+        function deleteMember(code) {
+            if (confirm("Remove this person? Their historical attendance will remain, but they won't appear on new lists.")) {
+                members = members.filter(m => m.code !== code);
+                saveData();
+            }
+        }
+
+        // Run on startup
+        renderAll();
+    </script>
+</body>
+
+</html>
