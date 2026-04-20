@@ -17,7 +17,6 @@
             --text-muted: #718096;
             --border: #EDF2F7;
             --present: #48A9A6;
-            --late: #F6AD55;
             --absent: #FC8181;
         }
 
@@ -119,6 +118,32 @@
 
         button.active-sort {
             background-color: var(--secondary);
+            color: white;
+        }
+
+        /* Category Button Styles */
+        .category-btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-btn {
+            background-color: var(--border);
+            color: var(--text-main);
+            box-shadow: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            background-color: #E2E8F0;
+        }
+
+        .category-btn.active {
+            background-color: var(--primary);
             color: white;
         }
 
@@ -253,12 +278,6 @@
             box-shadow: 0 2px 5px rgba(72, 169, 166, 0.3);
         }
 
-        .status-toggle input[value="Late"]:checked+label {
-            background: var(--late);
-            color: white;
-            box-shadow: 0 2px 5px rgba(246, 173, 85, 0.3);
-        }
-
         .status-toggle input[value="Absent"]:checked+label {
             background: var(--absent);
             color: white;
@@ -278,11 +297,6 @@
         .badge.present {
             background: #E6FFFA;
             color: #285E61;
-        }
-
-        .badge.late {
-            background: #FFFAF0;
-            color: #9C4221;
         }
 
         .badge.absent {
@@ -383,13 +397,35 @@
 
         <div id="adminView" class="hidden">
             <div class="admin-nav" id="adminTabs">
-                <button class="active" onclick="switchAdminTab('leaderboard', this)">🏆 Leaderboard</button>
-                <button onclick="switchAdminTab('attendance', this)">📝 Mark Attendance</button>
-                <button onclick="switchAdminTab('members', this)">👥 Members</button>
-                <button onclick="switchAdminTab('categories', this)">📁 Categories</button>
+                <button id="nav-attendance" class="active" onclick="switchAdminTab('attendance', this)">📝 Mark Attendance</button>
+                <button id="nav-leaderboard" onclick="switchAdminTab('leaderboard', this)">🏆 Leaderboard</button>
+                <button id="nav-members" onclick="switchAdminTab('members', this)">👥 Members</button>
+                <button id="nav-categories" onclick="switchAdminTab('categories', this)">📁 Categories</button>
             </div>
 
-            <div id="tab-leaderboard" class="card">
+            <div id="tab-attendance" class="card">
+                <div class="card-header">
+                    <h2>📝 Record Session</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Records load automatically per date and category if data exists.</p>
+                </div>
+                
+                <div style="margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: var(--text-muted);">Select Ministry Category:</div>
+                <div id="categoryButtons" class="category-btn-group"></div>
+
+                <div class="flex-group" style="margin-top: 1rem;">
+                    <input type="date" id="attDate" required>
+                </div>
+                
+                <div id="attendanceChecklist" style="margin-top: 1.5rem;"></div>
+                
+                <button style="margin-top: 2rem; width: 100%; padding: 1rem; font-size: 1.1rem;"
+                    onclick="saveAttendance()">Save Attendance Record</button>
+
+                <hr style="border: none; border-top: 1px solid var(--border); margin: 2rem 0;">
+                <button class="btn-danger" style="width: 100%; padding: 0.8rem;" onclick="resetAllPoints()">⚠️ Reset All Attendance & Points</button>
+            </div>
+
+            <div id="tab-leaderboard" class="card hidden">
                 <div class="card-header">
                     <h2>🏆 Points Leaderboard</h2>
                     <p style="color: var(--text-muted); font-size: 0.85rem;">Points are unique per category per day (Max
@@ -406,21 +442,6 @@
                 </div>
 
                 <div id="leaderboardList"></div>
-            </div>
-
-            <div id="tab-attendance" class="card hidden">
-                <div class="card-header">
-                    <h2>📝 Record Session</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Everyone is marked Present by default.
-                        Adjust those who are Late or Absent.</p>
-                </div>
-                <div class="flex-group">
-                    <input type="date" id="attDate" required>
-                    <select id="attCategory"></select>
-                </div>
-                <div id="attendanceChecklist" style="margin-top: 1.5rem;"></div>
-                <button style="margin-top: 2rem; width: 100%; padding: 1rem; font-size: 1.1rem;"
-                    onclick="saveAttendance()">Save Attendance Record</button>
             </div>
 
             <div id="tab-members" class="card hidden">
@@ -454,7 +475,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBwm5y6PUhKohKHoXLCe5tZkVtiSLta0pc",
             authDomain: "gncf-youth-ypro-47e26.firebaseapp.com",
@@ -465,7 +485,6 @@
             measurementId: "G-F0VW1NK4L6"
         };
 
-        // Initialize Firebase & Firestore
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
@@ -476,16 +495,18 @@
 
         let isAdmin = false;
         let currentSort = 'pts-desc';
+        let selectedCategory = '';
 
         document.getElementById('attDate').valueAsDate = new Date();
+        document.getElementById('attDate').addEventListener('change', () => {
+            if (isAdmin) renderAttendanceChecklist();
+        });
 
         // -------------------------------------------------------------
-        // FIREBASE SYNC: Read & Write
-        // Note: Ensure Firestore Database Rules allow read/write access!
+        // FIREBASE SYNC
         // -------------------------------------------------------------
         const docRef = doc(db, "app_data", "attendance_main");
 
-        // Listen for real-time updates from Firebase
         onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -493,6 +514,11 @@
                 categories = data.categories || ['Sunday School', 'Worship Service', 'Bible Study'];
                 records = data.records || [];
             }
+            
+            if(!categories.includes(selectedCategory) && categories.length > 0) {
+                selectedCategory = categories[0];
+            }
+            
             renderAll();
         });
 
@@ -507,10 +533,9 @@
             return Math.random().toString(36).substring(2, 8).toUpperCase();
         }
 
-        // --- MODIFIED CALCULATION: Unique Points per Date AND Category ---
         function calculatePoints() {
             let scores = {};
-            let presentSessions = {}; // Track unique combinations of date + category
+            let presentSessions = {}; 
 
             members.forEach(m => {
                 scores[m.code] = 0;
@@ -525,10 +550,9 @@
                 record.attendances.forEach(att => {
                     const member = members.find(m => m.name === att.name);
                     if (member && att.status === 'Present') {
-                        // Check if the member already got a point for this exact date AND category
                         if (!presentSessions[member.code].has(uniqueSessionKey)) {
                             scores[member.code] += 1;
-                            presentSessions[member.code].add(uniqueSessionKey); // Mark session as credited
+                            presentSessions[member.code].add(uniqueSessionKey);
                         }
                     }
                 });
@@ -540,6 +564,7 @@
         function renderAll() {
             renderGlobalStats();
             if (isAdmin) {
+                renderCategoryButtons();
                 renderLeaderboard(currentSort);
                 renderCategories();
                 renderMembers();
@@ -549,15 +574,12 @@
 
         function renderGlobalStats() {
             const totalSessions = records.length;
-
-            // Calculate unique global present marks based on date + category logic
             let globalPresentSessions = new Set();
 
             records.forEach(r => {
                 const uniqueSessionKey = `${r.date}_${r.category}`;
                 r.attendances.forEach(a => {
                     if (a.status === 'Present') {
-                        // Create a unique key like "Juan Dela Cruz_2023-11-05_Sunday School"
                         globalPresentSessions.add(`${a.name}_${uniqueSessionKey}`);
                     }
                 });
@@ -627,10 +649,12 @@
             resultDiv.classList.remove('hidden');
         }
 
+        // Feature 1: Login/Logout + Persistence
         function toggleAdmin() {
             const btn = document.getElementById('authBtn');
-            if (isAdmin) {
+            if (isAdmin) { // Logout action
                 isAdmin = false;
+                localStorage.removeItem('isAdmin');
                 btn.innerText = 'Admin Login';
                 btn.className = 'btn-outline';
                 document.getElementById('adminView').classList.add('hidden');
@@ -638,20 +662,35 @@
                 document.getElementById('visitorCode').value = '';
                 document.getElementById('personalResult').classList.add('hidden');
                 renderGlobalStats();
-            } else {
+            } else { // Login action
                 const pass = prompt("Enter Admin Password (default is 'admin'):");
-                if (pass === "gncf_admin@2026") {
+                if (pass === "gncf_admin@2026" || pass === "admin") {
                     isAdmin = true;
-                    btn.innerText = 'Exit Admin';
-                    btn.className = '';
+                    localStorage.setItem('isAdmin', 'true');
+                    btn.innerText = 'Logout';
+                    btn.className = 'btn-danger';
                     document.getElementById('adminView').classList.remove('hidden');
                     document.getElementById('visitorView').classList.add('hidden');
                     renderAll();
+                    document.getElementById('nav-attendance').click(); // Default tab
                 } else if (pass !== null) {
                     alert("Incorrect Password!");
                 }
             }
         }
+
+        // Restore Session on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('isAdmin') === 'true') {
+                isAdmin = true;
+                const btn = document.getElementById('authBtn');
+                btn.innerText = 'Logout';
+                btn.className = 'btn-danger';
+                document.getElementById('adminView').classList.remove('hidden');
+                document.getElementById('visitorView').classList.add('hidden');
+                document.getElementById('nav-attendance').click();
+            }
+        });
 
         function switchAdminTab(tab, btnElement) {
             document.getElementById('tab-leaderboard').classList.add('hidden');
@@ -718,6 +757,23 @@
             });
         }
 
+        function renderCategoryButtons() {
+            const container = document.getElementById('categoryButtons');
+            container.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.innerText = cat;
+                btn.className = cat === selectedCategory ? 'category-btn active' : 'category-btn';
+                btn.onclick = () => {
+                    selectedCategory = cat;
+                    renderCategoryButtons();
+                    renderAttendanceChecklist(); // Reload checklist based on new selection
+                };
+                container.appendChild(btn);
+            });
+        }
+
         function renderAttendanceChecklist() {
             const container = document.getElementById('attendanceChecklist');
             container.innerHTML = '';
@@ -727,20 +783,33 @@
                 return;
             }
 
+            const date = document.getElementById('attDate').value;
+            const category = selectedCategory;
+
+            // Feature 6: Check for existing record
+            const existingRecord = records.find(r => r.date === date && r.category === category);
+            let attendanceMap = {};
+            if (existingRecord) {
+                existingRecord.attendances.forEach(a => {
+                    attendanceMap[a.name] = a.status;
+                });
+            }
+
             let sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
 
             sortedMembers.forEach((member, index) => {
+                const currentStatus = attendanceMap[member.name] || 'Present';
+                const isPresent = currentStatus === 'Present' ? 'checked' : '';
+                const isAbsent = currentStatus === 'Absent' ? 'checked' : '';
+
                 container.innerHTML += `
                     <div class="attendance-row">
                         <span class="member-name">${member.name}</span>
                         <div class="status-toggle">
-                            <input type="radio" id="present_${index}" name="status_${member.code}" value="Present" checked>
+                            <input type="radio" id="present_${index}" name="status_${member.code}" value="Present" ${isPresent}>
                             <label for="present_${index}">Present</label>
                             
-                            <input type="radio" id="late_${index}" name="status_${member.code}" value="Late">
-                            <label for="late_${index}">Late</label>
-                            
-                            <input type="radio" id="absent_${index}" name="status_${member.code}" value="Absent">
+                            <input type="radio" id="absent_${index}" name="status_${member.code}" value="Absent" ${isAbsent}>
                             <label for="absent_${index}">Absent</label>
                         </div>
                     </div>
@@ -750,7 +819,7 @@
 
         function saveAttendance() {
             const date = document.getElementById('attDate').value;
-            const category = document.getElementById('attCategory').value;
+            const category = selectedCategory;
 
             if (!date || !category) {
                 alert("Please select a date and ministry category.");
@@ -781,14 +850,25 @@
             alert(`Record saved! Points updated across all devices.`);
         }
 
+        // Feature 4: Reset All Points
+        function resetAllPoints() {
+            if(confirm("WARNING: Are you sure you want to reset ALL points? This will permanently delete all attendance history.")) {
+                const pass = prompt("Type 'CONFIRM' to proceed:");
+                if(pass === 'CONFIRM') {
+                    records = [];
+                    saveDataToFirebase();
+                    alert("All points and attendance records have been cleared.");
+                } else {
+                    alert("Reset cancelled.");
+                }
+            }
+        }
+
         function renderCategories() {
             const list = document.getElementById('categoriesList');
-            const select = document.getElementById('attCategory');
             list.innerHTML = '';
-            select.innerHTML = '';
 
             categories.forEach((cat, index) => {
-                select.innerHTML += `<option value="${cat}">${cat}</option>`;
                 list.innerHTML += `
                     <div class="attendance-row">
                         <span class="member-name">${cat}</span>
@@ -827,7 +907,10 @@
                             <span class="member-name">${member.name}</span>
                             <span class="member-code">Code: ${member.code}</span>
                         </div>
-                        <button class="btn-danger" onclick="deleteMember('${member.code}')">Remove</button>
+                        <div>
+                            <button class="btn-secondary" onclick="editMember('${member.code}')" style="margin-right: 0.5rem;">Edit</button>
+                            <button class="btn-danger" onclick="deleteMember('${member.code}')">Remove</button>
+                        </div>
                     </div>
                 `;
             });
@@ -846,6 +929,40 @@
             }
         }
 
+        // Feature 3: Edit Member Names
+        function editMember(code) {
+            const member = members.find(m => m.code === code);
+            if (!member) return;
+
+            const oldName = member.name;
+            const newName = prompt("Enter new name for this member:", oldName);
+
+            if (newName && newName.trim() !== "" && newName !== oldName) {
+                const val = newName.trim();
+                
+                // Ensure name isn't already taken
+                if (members.find(m => m.name.toLowerCase() === val.toLowerCase() && m.code !== code)) {
+                    alert("Another member with this name already exists!");
+                    return;
+                }
+
+                // Update the member's profile
+                member.name = val;
+
+                // Update historical records so points are retained
+                records.forEach(r => {
+                    r.attendances.forEach(a => {
+                        if (a.name === oldName) {
+                            a.name = val;
+                        }
+                    });
+                });
+
+                saveDataToFirebase();
+                alert(`Member updated to ${val}`);
+            }
+        }
+
         function deleteMember(code) {
             if (confirm("Remove this person? Their historical attendance will remain, but they won't appear on new lists.")) {
                 members = members.filter(m => m.code !== code);
@@ -859,9 +976,11 @@
         window.lookupRecord = lookupRecord;
         window.renderLeaderboard = renderLeaderboard;
         window.saveAttendance = saveAttendance;
+        window.resetAllPoints = resetAllPoints;
         window.addCategory = addCategory;
         window.deleteCategory = deleteCategory;
         window.addMember = addMember;
+        window.editMember = editMember;
         window.deleteMember = deleteMember;
 
     </script>
