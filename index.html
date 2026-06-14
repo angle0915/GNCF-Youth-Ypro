@@ -18,6 +18,8 @@
             --border: #EDF2F7;
             --present: #48A9A6;
             --absent: #FC8181;
+            --done: #4299E1;
+            --neutral: #A0AEC0;
         }
 
         * {
@@ -121,7 +123,6 @@
             color: white;
         }
 
-        /* Category Button Styles */
         .category-btn-group {
             display: flex;
             gap: 0.5rem;
@@ -148,6 +149,7 @@
         }
 
         input[type="text"],
+        input[type="number"],
         input[type="date"],
         select {
             padding: 0.8rem 1rem;
@@ -232,6 +234,35 @@
             border-bottom: none;
         }
 
+        /* Drag and Drop Styles */
+        .draggable-item {
+            background: #FAFAFA;
+            border: 1px solid var(--border) !important;
+            border-radius: 12px;
+            padding: 0.8rem 1rem !important;
+            margin-bottom: 0.5rem;
+            cursor: grab;
+            transition: all 0.2s ease;
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+
+        .drag-handle {
+            color: #CBD5E0;
+            margin-right: 10px;
+            font-size: 1.2rem;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+        }
+        
+        .draggable-item.drag-over {
+            border-top: 3px solid var(--primary) !important;
+            background: #FFF5F5;
+        }
+
         .member-name {
             font-weight: 600;
             font-size: 1rem;
@@ -266,9 +297,12 @@
             color: var(--text-muted);
             transition: all 0.2s;
             user-select: none;
+            text-align: center;
+            min-width: 80px;
         }
 
-        .status-toggle input[type="radio"] {
+        .status-toggle input[type="radio"],
+        .status-toggle input[type="checkbox"] {
             display: none;
         }
 
@@ -284,6 +318,21 @@
             box-shadow: 0 2px 5px rgba(252, 129, 129, 0.3);
         }
 
+        .status-toggle input[value="Done"]:checked+label {
+            background: var(--done);
+            color: white;
+            box-shadow: 0 2px 5px rgba(66, 153, 225, 0.3);
+        }
+
+        .custom-text-input {
+            padding: 0.5rem 0.8rem !important;
+            border-radius: 8px !important;
+            border: 1px solid var(--border) !important;
+            font-size: 0.85rem !important;
+            width: 160px !important;
+            background: white !important;
+        }
+
         .badge {
             display: inline-block;
             padding: 0.3rem 0.8rem;
@@ -292,17 +341,16 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
         }
 
-        .badge.present {
-            background: #E6FFFA;
-            color: #285E61;
-        }
-
-        .badge.absent {
-            background: #FFF5F5;
-            color: #9B2C2C;
-        }
+        .badge.present { background: #E6FFFA; color: #285E61; }
+        .badge.absent { background: #FFF5F5; color: #9B2C2C; }
+        .badge.done { background: #EBF8FF; color: #2B6CB0; }
+        .badge.custom { background: #EDF2F7; color: #4A5568; }
 
         .flex-group {
             display: flex;
@@ -339,15 +387,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -365,12 +406,12 @@
             <div class="card">
                 <div class="card-header">
                     <h2>📊 Ministry Overview</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Total unique attendances by the youth!</p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Total points and attendances by the youth!</p>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                     <div class="stat-box">
                         <div class="stat-number" id="globalTotalPoints">0</div>
-                        <div style="font-weight: 600; color: var(--text-muted);">Total Present Marks</div>
+                        <div style="font-weight: 600; color: var(--text-muted);">Total Points Earned</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-number" id="globalTotalSessions">0</div>
@@ -382,12 +423,10 @@
             <div class="card">
                 <div class="card-header">
                     <h2>🔍 My Attendance Record</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Enter your unique code to see your points
-                        and history.</p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Enter your unique code to see your points and history.</p>
                 </div>
                 <div class="flex-group">
-                    <input type="text" id="visitorCode" placeholder="Enter 6-character code (e.g., A1B2C3)"
-                        style="text-transform: uppercase;">
+                    <input type="text" id="visitorCode" placeholder="Enter 6-character code (e.g., A1B2C3)" style="text-transform: uppercase;">
                     <button onclick="lookupRecord()">Check Record</button>
                 </div>
 
@@ -428,17 +467,13 @@
             <div id="tab-leaderboard" class="card hidden">
                 <div class="card-header">
                     <h2>🏆 Points Leaderboard</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Points are unique per category per day (Max
-                        1 point per member per ministry event).</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Points are calculated based on the assigned points per category for each unique session.</p>
                 </div>
 
                 <div class="leaderboard-controls">
-                    <button class="btn-secondary active-sort" id="sort-pts-desc"
-                        onclick="renderLeaderboard('pts-desc')">Highest Points</button>
-                    <button class="btn-secondary" id="sort-pts-asc" onclick="renderLeaderboard('pts-asc')">Lowest
-                        Points</button>
-                    <button class="btn-secondary" id="sort-name" onclick="renderLeaderboard('name')">Sort by
-                        Name</button>
+                    <button class="btn-secondary active-sort" id="sort-pts-desc" onclick="renderLeaderboard('pts-desc')">Highest Points</button>
+                    <button class="btn-secondary" id="sort-pts-asc" onclick="renderLeaderboard('pts-asc')">Lowest Points</button>
+                    <button class="btn-secondary" id="sort-name" onclick="renderLeaderboard('name')">Sort by Name</button>
                 </div>
 
                 <div id="leaderboardList"></div>
@@ -447,8 +482,7 @@
             <div id="tab-members" class="card hidden">
                 <div class="card-header">
                     <h2>👥 Member Directory</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Share these unique codes with members so
-                        they can track their points.</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Share these unique codes with members so they can track their points.</p>
                 </div>
                 <div class="flex-group">
                     <input type="text" id="newMemberName" placeholder="Enter full name (e.g. Juan Dela Cruz)">
@@ -459,13 +493,26 @@
 
             <div id="tab-categories" class="card hidden">
                 <div class="card-header">
-                    <h2>📁 Ministry Categories</h2>
+                    <h2>📁 Ministry Categories & Settings</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Configure response types and point values. <b>Drag and drop the rows below to reorder them!</b></p>
                 </div>
-                <div class="flex-group">
-                    <input type="text" id="newCategoryName" placeholder="E.g., Youth Camp">
-                    <button onclick="addCategory()">Add</button>
+                
+                <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+                        <input type="text" id="newCategoryName" placeholder="Category Name" style="flex: 2; min-width: 150px;">
+                        <input type="number" id="newCategoryPoints" placeholder="Pts" value="1" min="1" style="flex: 0.5; min-width: 70px;">
+                    </div>
+                    <div style="display: flex; gap: 0.8rem;">
+                        <select id="newCategoryType" style="flex: 2;">
+                            <option value="Present/Absent">Type: Present / Absent</option>
+                            <option value="Done Only">Type: Done Only</option>
+                            <option value="Custom Text">Type: Custom Text</option>
+                        </select>
+                        <button onclick="addCategory()" style="flex: 1;">Add</button>
+                    </div>
                 </div>
-                <div id="categoriesList" style="margin-top: 1rem;"></div>
+
+                <div id="categoriesList" style="margin-top: 2rem;"></div>
             </div>
         </div>
 
@@ -490,12 +537,13 @@
 
         // --- GLOBAL DATA VARIABLES ---
         let members = [];
-        let categories = ['Sunday School', 'Worship Service', 'Bible Study'];
+        let categories = [];
         let records = [];
 
         let isAdmin = false;
         let currentSort = 'pts-desc';
-        let selectedCategory = '';
+        let selectedCategory = ''; 
+        let draggedCategoryIndex = null; // Used for drag and drop
 
         document.getElementById('attDate').valueAsDate = new Date();
         document.getElementById('attDate').addEventListener('change', () => {
@@ -511,12 +559,27 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 members = data.members || [];
-                categories = data.categories || ['Sunday School', 'Worship Service', 'Bible Study'];
+                
+                categories = (data.categories || []).map(c => {
+                    if (typeof c === 'string') return { name: c, points: 1, type: 'Present/Absent' };
+                    return {
+                        name: c.name,
+                        points: c.points || 1,
+                        type: c.type || 'Present/Absent'
+                    };
+                });
+                
+                if (categories.length === 0) {
+                    categories = [
+                        { name: 'Sunday School', points: 1, type: 'Present/Absent' }
+                    ];
+                }
+
                 records = data.records || [];
             }
             
-            if(!categories.includes(selectedCategory) && categories.length > 0) {
-                selectedCategory = categories[0];
+            if(!categories.find(c => c.name === selectedCategory) && categories.length > 0) {
+                selectedCategory = categories[0].name;
             }
             
             renderAll();
@@ -546,12 +609,30 @@
                 const recordDate = record.date;
                 const recordCategory = record.category;
                 const uniqueSessionKey = `${recordDate}_${recordCategory}`;
+                
+                const catData = categories.find(c => c.name === recordCategory);
+                const pointsValue = catData ? Number(catData.points) : 1;
+                const catType = catData ? catData.type : 'Present/Absent';
 
                 record.attendances.forEach(att => {
                     const member = members.find(m => m.name === att.name);
-                    if (member && att.status === 'Present') {
+                    
+                    let getsPoints = false;
+                    const status = att.status;
+
+                    if (catType === 'Present/Absent' && status === 'Present') {
+                        getsPoints = true;
+                    } else if (catType === 'Done Only' && status === 'Done') {
+                        getsPoints = true;
+                    } else if (catType === 'Custom Text' && status && status.trim() !== '' && status !== 'None') {
+                        getsPoints = true;
+                    }
+
+                    if (status === 'Present' || status === 'Done') getsPoints = true;
+
+                    if (member && getsPoints) {
                         if (!presentSessions[member.code].has(uniqueSessionKey)) {
-                            scores[member.code] += 1;
+                            scores[member.code] += pointsValue;
                             presentSessions[member.code].add(uniqueSessionKey);
                         }
                     }
@@ -574,19 +655,12 @@
 
         function renderGlobalStats() {
             const totalSessions = records.length;
-            let globalPresentSessions = new Set();
-
-            records.forEach(r => {
-                const uniqueSessionKey = `${r.date}_${r.category}`;
-                r.attendances.forEach(a => {
-                    if (a.status === 'Present') {
-                        globalPresentSessions.add(`${a.name}_${uniqueSessionKey}`);
-                    }
-                });
-            });
+            const scores = calculatePoints();
+            let totalPointsEarned = 0;
+            for (let code in scores) { totalPointsEarned += scores[code]; }
 
             document.getElementById('globalTotalSessions').innerText = totalSessions;
-            document.getElementById('globalTotalPoints').innerText = globalPresentSessions.size;
+            document.getElementById('globalTotalPoints').innerText = totalPointsEarned;
         }
 
         function lookupRecord() {
@@ -597,7 +671,7 @@
             const member = members.find(m => m.code === input);
 
             if (!member) {
-                resultDiv.innerHTML = `<p style="color: var(--absent); font-weight: 600; text-align: center; padding: 1rem; background: #FFF5F5; border-radius: 12px;">❌ Invalid code. Please try again or ask an Admin.</p>`;
+                resultDiv.innerHTML = `<p style="color: var(--absent); font-weight: 600; text-align: center; padding: 1rem; background: #FFF5F5; border-radius: 12px;">❌ Invalid code.</p>`;
                 resultDiv.classList.remove('hidden');
                 return;
             }
@@ -610,8 +684,10 @@
 
             records.forEach(r => {
                 const myAtt = r.attendances.find(a => a.name === member.name);
-                if (myAtt) {
-                    myRecords.push({ date: r.date, category: r.category, status: myAtt.status });
+                if (myAtt && myAtt.status !== 'None' && myAtt.status !== 'Not Done' && myAtt.status !== '') {
+                    const catData = categories.find(c => c.name === r.category);
+                    const ptVal = catData ? catData.points : 1;
+                    myRecords.push({ date: r.date, category: r.category, status: myAtt.status, points: ptVal });
                 }
             });
 
@@ -622,15 +698,21 @@
                 historyHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No attendance records found yet.</p>';
             } else {
                 recent.forEach(r => {
-                    const badgeClass = r.status.toLowerCase();
+                    let badgeClass = 'custom';
+                    if (r.status === 'Present') badgeClass = 'present';
+                    else if (r.status === 'Absent') badgeClass = 'absent';
+                    else if (r.status === 'Done') badgeClass = 'done';
+
                     const displayDate = new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const ptsEarned = r.status !== 'Absent' ? `(+${r.points} pts)` : '';
+                    
                     historyHTML += `
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px dashed var(--border);">
                             <div>
-                                <div style="font-weight: 600;">${r.category}</div>
+                                <div style="font-weight: 600;">${r.category} <span style="font-size: 0.8rem; color: var(--secondary); font-weight: 600;">${ptsEarned}</span></div>
                                 <div style="font-size: 0.8rem; color: var(--text-muted);">${displayDate}</div>
                             </div>
-                            <span class="badge ${badgeClass}">${r.status}</span>
+                            <span class="badge ${badgeClass}" title="${r.status}">${r.status}</span>
                         </div>
                     `;
                 });
@@ -649,10 +731,10 @@
             resultDiv.classList.remove('hidden');
         }
 
-        // Feature 1: Login/Logout + Persistence
+        // Login/Logout
         function toggleAdmin() {
             const btn = document.getElementById('authBtn');
-            if (isAdmin) { // Logout action
+            if (isAdmin) {
                 isAdmin = false;
                 localStorage.removeItem('isAdmin');
                 btn.innerText = 'Admin Login';
@@ -662,7 +744,7 @@
                 document.getElementById('visitorCode').value = '';
                 document.getElementById('personalResult').classList.add('hidden');
                 renderGlobalStats();
-            } else { // Login action
+            } else {
                 const pass = prompt("Enter Admin Password (default is 'admin'):");
                 if (pass === "gncf_admin@2026" || pass === "admin") {
                     isAdmin = true;
@@ -672,14 +754,13 @@
                     document.getElementById('adminView').classList.remove('hidden');
                     document.getElementById('visitorView').classList.add('hidden');
                     renderAll();
-                    document.getElementById('nav-attendance').click(); // Default tab
+                    document.getElementById('nav-attendance').click();
                 } else if (pass !== null) {
                     alert("Incorrect Password!");
                 }
             }
         }
 
-        // Restore Session on Load
         window.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('isAdmin') === 'true') {
                 isAdmin = true;
@@ -722,18 +803,12 @@
 
             const scores = calculatePoints();
             let leaderboardData = members.map(m => ({
-                name: m.name,
-                code: m.code,
-                points: scores[m.code]
+                name: m.name, code: m.code, points: scores[m.code]
             }));
 
-            if (sortType === 'name') {
-                leaderboardData.sort((a, b) => a.name.localeCompare(b.name));
-            } else if (sortType === 'pts-asc') {
-                leaderboardData.sort((a, b) => a.points - b.points);
-            } else {
-                leaderboardData.sort((a, b) => b.points - a.points);
-            }
+            if (sortType === 'name') leaderboardData.sort((a, b) => a.name.localeCompare(b.name));
+            else if (sortType === 'pts-asc') leaderboardData.sort((a, b) => a.points - b.points);
+            else leaderboardData.sort((a, b) => b.points - a.points);
 
             leaderboardData.forEach((item, index) => {
                 let rankIcon = '';
@@ -763,12 +838,12 @@
             
             categories.forEach(cat => {
                 const btn = document.createElement('button');
-                btn.innerText = cat;
-                btn.className = cat === selectedCategory ? 'category-btn active' : 'category-btn';
+                btn.innerText = `${cat.name} (${cat.points} pt${cat.points > 1 ? 's' : ''})`;
+                btn.className = cat.name === selectedCategory ? 'category-btn active' : 'category-btn';
                 btn.onclick = () => {
-                    selectedCategory = cat;
+                    selectedCategory = cat.name;
                     renderCategoryButtons();
-                    renderAttendanceChecklist(); // Reload checklist based on new selection
+                    renderAttendanceChecklist();
                 };
                 container.appendChild(btn);
             });
@@ -784,10 +859,12 @@
             }
 
             const date = document.getElementById('attDate').value;
-            const category = selectedCategory;
+            const categoryName = selectedCategory;
+            
+            const activeCategory = categories.find(c => c.name === categoryName);
+            const catType = activeCategory ? activeCategory.type : 'Present/Absent';
 
-            // Feature 6: Check for existing record
-            const existingRecord = records.find(r => r.date === date && r.category === category);
+            const existingRecord = records.find(r => r.date === date && r.category === categoryName);
             let attendanceMap = {};
             if (existingRecord) {
                 existingRecord.attendances.forEach(a => {
@@ -798,19 +875,36 @@
             let sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
 
             sortedMembers.forEach((member, index) => {
-                const currentStatus = attendanceMap[member.name] || 'Present';
-                const isPresent = currentStatus === 'Present' ? 'checked' : '';
-                const isAbsent = currentStatus === 'Absent' ? 'checked' : '';
+                const currentStatus = attendanceMap[member.name] || '';
+                let controlsHTML = '';
+
+                if (catType === 'Present/Absent') {
+                    const isPresent = (currentStatus === 'Present' || currentStatus === '') ? 'checked' : '';
+                    const isAbsent = currentStatus === 'Absent' ? 'checked' : '';
+                    controlsHTML = `
+                        <input type="radio" id="present_${index}" name="status_${member.code}" value="Present" ${isPresent}>
+                        <label for="present_${index}">Present</label>
+                        <input type="radio" id="absent_${index}" name="status_${member.code}" value="Absent" ${isAbsent}>
+                        <label for="absent_${index}">Absent</label>
+                    `;
+                } else if (catType === 'Done Only') {
+                    const isDone = currentStatus === 'Done' ? 'checked' : '';
+                    controlsHTML = `
+                        <input type="checkbox" id="done_${index}" name="status_${member.code}" value="Done" ${isDone}>
+                        <label for="done_${index}">Done</label>
+                    `;
+                } else if (catType === 'Custom Text') {
+                    const displayValue = currentStatus === 'None' ? '' : currentStatus;
+                    controlsHTML = `
+                        <input type="text" id="custom_${index}" name="status_${member.code}" class="custom-text-input" value="${displayValue}" placeholder="Enter remark...">
+                    `;
+                }
 
                 container.innerHTML += `
                     <div class="attendance-row">
                         <span class="member-name">${member.name}</span>
-                        <div class="status-toggle">
-                            <input type="radio" id="present_${index}" name="status_${member.code}" value="Present" ${isPresent}>
-                            <label for="present_${index}">Present</label>
-                            
-                            <input type="radio" id="absent_${index}" name="status_${member.code}" value="Absent" ${isAbsent}>
-                            <label for="absent_${index}">Absent</label>
+                        <div class="${catType === 'Custom Text' ? '' : 'status-toggle'}">
+                            ${controlsHTML}
                         </div>
                     </div>
                 `;
@@ -819,30 +913,41 @@
 
         function saveAttendance() {
             const date = document.getElementById('attDate').value;
-            const category = selectedCategory;
+            const categoryName = selectedCategory;
 
-            if (!date || !category) {
+            if (!date || !categoryName) {
                 alert("Please select a date and ministry category.");
                 return;
             }
             if (members.length === 0) return;
 
+            const activeCategory = categories.find(c => c.name === categoryName);
+            const catType = activeCategory ? activeCategory.type : 'Present/Absent';
+
             const attendances = [];
             members.forEach(member => {
-                const selectedStatus = document.querySelector(`input[name="status_${member.code}"]:checked`).value;
-                attendances.push({ name: member.name, status: selectedStatus });
+                let finalStatus = '';
+                if (catType === 'Present/Absent') {
+                    const checkedEl = document.querySelector(`input[name="status_${member.code}"]:checked`);
+                    finalStatus = checkedEl ? checkedEl.value : 'Absent';
+                } else if (catType === 'Done Only') {
+                    const checkbox = document.querySelector(`input[name="status_${member.code}"]`);
+                    finalStatus = checkbox.checked ? 'Done' : 'Not Done';
+                } else if (catType === 'Custom Text') {
+                    const inputEl = document.querySelector(`input[name="status_${member.code}"]`);
+                    finalStatus = inputEl.value.trim() || 'None';
+                }
+                attendances.push({ name: member.name, status: finalStatus });
             });
 
-            const existingIndex = records.findIndex(r => r.date === date && r.category === category);
+            const existingIndex = records.findIndex(r => r.date === date && r.category === categoryName);
 
             if (existingIndex >= 0) {
                 if (confirm("A record for this date and category already exists. Overwrite?")) {
                     records[existingIndex].attendances = attendances;
-                } else {
-                    return;
-                }
+                } else return;
             } else {
-                records.push({ date, category, attendances });
+                records.push({ date, category: categoryName, attendances });
             }
 
             saveDataToFirebase();
@@ -850,7 +955,6 @@
             alert(`Record saved! Points updated across all devices.`);
         }
 
-        // Feature 4: Reset All Points
         function resetAllPoints() {
             if(confirm("WARNING: Are you sure you want to reset ALL points? This will permanently delete all attendance history.")) {
                 const pass = prompt("Type 'CONFIRM' to proceed:");
@@ -858,33 +962,123 @@
                     records = [];
                     saveDataToFirebase();
                     alert("All points and attendance records have been cleared.");
-                } else {
-                    alert("Reset cancelled.");
-                }
+                } else alert("Reset cancelled.");
             }
         }
+
+        // --- DRAG AND DROP HANDLERS FOR CATEGORIES ---
+        function handleDragStart(e) {
+            draggedCategoryIndex = parseInt(e.currentTarget.getAttribute('data-index'));
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedCategoryIndex);
+            setTimeout(() => e.currentTarget.style.opacity = '0.5', 0);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault(); 
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            const dropTarget = e.currentTarget;
+            dropTarget.classList.remove('drag-over');
+            dropTarget.style.opacity = '1';
+
+            const droppedCategoryIndex = parseInt(dropTarget.getAttribute('data-index'));
+
+            if (draggedCategoryIndex !== null && draggedCategoryIndex !== droppedCategoryIndex) {
+                // Reorder array
+                const movedItem = categories.splice(draggedCategoryIndex, 1)[0];
+                categories.splice(droppedCategoryIndex, 0, movedItem);
+                
+                saveDataToFirebase();
+                renderCategories();
+                renderCategoryButtons(); 
+            }
+            draggedCategoryIndex = null;
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.style.opacity = '1';
+            document.querySelectorAll('.draggable-item').forEach(item => item.classList.remove('drag-over'));
+            draggedCategoryIndex = null;
+        }
+
 
         function renderCategories() {
             const list = document.getElementById('categoriesList');
             list.innerHTML = '';
 
             categories.forEach((cat, index) => {
+                let badgeColor = '#A0AEC0'; 
+                if (cat.type === 'Present/Absent') badgeColor = '#48A9A6';
+                if (cat.type === 'Done Only') badgeColor = '#4299E1';
+
                 list.innerHTML += `
-                    <div class="attendance-row">
-                        <span class="member-name">${cat}</span>
-                        <button class="btn-danger" onclick="deleteCategory(${index})">Delete</button>
+                    <div class="attendance-row draggable-item" draggable="true" data-index="${index}"
+                         ondragstart="handleDragStart(event)" 
+                         ondragover="handleDragOver(event)" 
+                         ondrop="handleDrop(event)" 
+                         ondragenter="handleDragEnter(event)" 
+                         ondragleave="handleDragLeave(event)"
+                         ondragend="handleDragEnd(event)">
+                        <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                            <span class="drag-handle" title="Drag to reorder">☰</span>
+                            <span class="member-name" style="margin-right: 10px;">${cat.name}</span>
+                            <span class="badge" style="margin-right: 6px; background: #E2E8F0; color: ${badgeColor};">${cat.type}</span>
+                            <span class="badge present">${cat.points} pt${cat.points > 1 ? 's' : ''}</span>
+                        </div>
+                        <div>
+                            <button class="btn-secondary" onclick="editCategory(${index})" style="margin-right: 0.5rem;">Edit Pts</button>
+                            <button class="btn-danger" onclick="deleteCategory(${index})">Del</button>
+                        </div>
                     </div>
                 `;
             });
         }
 
         function addCategory() {
-            const input = document.getElementById('newCategoryName');
-            const val = input.value.trim();
-            if (val && !categories.includes(val)) {
-                categories.push(val);
-                input.value = '';
+            const nameInput = document.getElementById('newCategoryName');
+            const ptsInput = document.getElementById('newCategoryPoints');
+            const typeSelect = document.getElementById('newCategoryType');
+            
+            const nameVal = nameInput.value.trim();
+            const ptsVal = parseInt(ptsInput.value) || 1;
+            const typeVal = typeSelect.value;
+
+            if (nameVal && !categories.find(c => c.name.toLowerCase() === nameVal.toLowerCase())) {
+                categories.push({ name: nameVal, points: ptsVal, type: typeVal });
+                nameInput.value = '';
+                ptsInput.value = '1';
+                typeSelect.value = 'Present/Absent';
                 saveDataToFirebase();
+            } else if (nameVal) alert("Category already exists!");
+        }
+
+        function editCategory(index) {
+            const cat = categories[index];
+            const newPtsStr = prompt(`Enter new point value for ${cat.name}:`, cat.points);
+            
+            if (newPtsStr !== null) {
+                const newPts = parseInt(newPtsStr);
+                if (!isNaN(newPts) && newPts > 0) {
+                    categories[index].points = newPts;
+                    saveDataToFirebase();
+                } else alert("Please enter a valid number greater than 0.");
             }
         }
 
@@ -909,7 +1103,7 @@
                         </div>
                         <div>
                             <button class="btn-secondary" onclick="editMember('${member.code}')" style="margin-right: 0.5rem;">Edit</button>
-                            <button class="btn-danger" onclick="deleteMember('${member.code}')">Remove</button>
+                            <button class="btn-danger" onclick="deleteMember('${member.code}')">Del</button>
                         </div>
                     </div>
                 `;
@@ -924,12 +1118,9 @@
                 members.push({ name: val, code: generateCode() });
                 input.value = '';
                 saveDataToFirebase();
-            } else if (val) {
-                alert("Member already exists!");
-            }
+            } else if (val) alert("Member already exists!");
         }
 
-        // Feature 3: Edit Member Names
         function editMember(code) {
             const member = members.find(m => m.code === code);
             if (!member) return;
@@ -940,21 +1131,16 @@
             if (newName && newName.trim() !== "" && newName !== oldName) {
                 const val = newName.trim();
                 
-                // Ensure name isn't already taken
                 if (members.find(m => m.name.toLowerCase() === val.toLowerCase() && m.code !== code)) {
                     alert("Another member with this name already exists!");
                     return;
                 }
 
-                // Update the member's profile
                 member.name = val;
 
-                // Update historical records so points are retained
                 records.forEach(r => {
                     r.attendances.forEach(a => {
-                        if (a.name === oldName) {
-                            a.name = val;
-                        }
+                        if (a.name === oldName) a.name = val;
                     });
                 });
 
@@ -978,10 +1164,17 @@
         window.saveAttendance = saveAttendance;
         window.resetAllPoints = resetAllPoints;
         window.addCategory = addCategory;
+        window.editCategory = editCategory;
         window.deleteCategory = deleteCategory;
         window.addMember = addMember;
         window.editMember = editMember;
         window.deleteMember = deleteMember;
+        window.handleDragStart = handleDragStart;
+        window.handleDragOver = handleDragOver;
+        window.handleDragEnter = handleDragEnter;
+        window.handleDragLeave = handleDragLeave;
+        window.handleDrop = handleDrop;
+        window.handleDragEnd = handleDragEnd;
 
     </script>
 </body>
