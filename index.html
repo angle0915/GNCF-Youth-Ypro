@@ -352,6 +352,153 @@
         .badge.done { background: #EBF8FF; color: #2B6CB0; }
         .badge.custom { background: #EDF2F7; color: #4A5568; }
 
+        /* ---- Attendance Grid Table ---- */
+        .att-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 1.5rem;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .att-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .att-table th {
+            padding: 0.75rem 0.9rem;
+            background: #F7FAFC;
+            border-bottom: 2px solid var(--border);
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            vertical-align: bottom;
+        }
+
+        .att-table th.name-col {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            z-index: 3;
+            background: #F0F4F8;
+            border-right: 2px solid var(--border);
+            min-width: 140px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .att-table td {
+            padding: 0.55rem 0.75rem;
+            border-bottom: 1px solid #F0F4F8;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .att-table td.name-col {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-right: 2px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .att-table tr:last-child td { border-bottom: none; }
+        .att-table tr:nth-child(even) td { background: #FAFAFA; }
+        .att-table tr:nth-child(odd) td { background: #FFFFFF; }
+        .att-table tr:nth-child(even) td.name-col { background: #F7FAFC; }
+        .att-table tr:nth-child(odd) td.name-col { background: #FFFFFF; }
+        .att-table tr:hover td { background: #FFF9F7; }
+        .att-table tr:hover td.name-col { background: #FFF5F3; }
+
+        .att-cat-header-name {
+            font-weight: 700;
+            font-size: 0.84rem;
+            color: var(--text-main);
+        }
+        .att-cat-header-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 3px;
+        }
+
+        /* Compact P/A/Done toggles inside table cells */
+        .compact-toggle {
+            display: inline-flex;
+            background: #EDF2F7;
+            border-radius: 8px;
+            padding: 3px;
+            gap: 2px;
+        }
+
+        .compact-toggle input[type="radio"],
+        .compact-toggle input[type="checkbox"] {
+            display: none;
+        }
+
+        .compact-toggle label {
+            padding: 0.28rem 0.65rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 6px;
+            color: var(--text-muted);
+            transition: all 0.15s;
+            user-select: none;
+            letter-spacing: 0.3px;
+        }
+
+        .compact-toggle input[value="Present"]:checked + label {
+            background: var(--present);
+            color: white;
+            box-shadow: 0 1px 4px rgba(72,169,166,0.35);
+        }
+
+        .compact-toggle input[value="Absent"]:checked + label {
+            background: var(--absent);
+            color: white;
+            box-shadow: 0 1px 4px rgba(252,129,129,0.35);
+        }
+
+        .compact-toggle input[value="Done"]:checked + label {
+            background: var(--done);
+            color: white;
+            box-shadow: 0 1px 4px rgba(66,153,225,0.35);
+        }
+
+        .compact-text-input {
+            padding: 0.32rem 0.6rem !important;
+            border-radius: 7px !important;
+            border: 1px solid var(--border) !important;
+            font-size: 0.78rem !important;
+            width: 110px !important;
+            background: white !important;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .att-date-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 0;
+        }
+
+        .att-date-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
         .flex-group {
             display: flex;
             gap: 0.8rem;
@@ -445,20 +592,18 @@
             <div id="tab-attendance" class="card">
                 <div class="card-header">
                     <h2>📝 Record Session</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Records load automatically per date and category if data exists.</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">All categories shown as columns. Existing records auto-load for the selected date.</p>
                 </div>
                 
-                <div style="margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: var(--text-muted);">Select Ministry Category:</div>
-                <div id="categoryButtons" class="category-btn-group"></div>
-
-                <div class="flex-group" style="margin-top: 1rem;">
-                    <input type="date" id="attDate" required>
+                <div class="att-date-row">
+                    <span class="att-date-label">📅 Date:</span>
+                    <input type="date" id="attDate" required style="max-width: 220px;">
                 </div>
                 
-                <div id="attendanceChecklist" style="margin-top: 1.5rem;"></div>
+                <div id="attendanceChecklist"></div>
                 
                 <button style="margin-top: 2rem; width: 100%; padding: 1rem; font-size: 1.1rem;"
-                    onclick="saveAttendance()">Save Attendance Record</button>
+                    onclick="saveAttendance()">💾 Save All Attendance Records</button>
 
                 <hr style="border: none; border-top: 1px solid var(--border); margin: 2rem 0;">
                 <button class="btn-danger" style="width: 100%; padding: 0.8rem;" onclick="resetAllPoints()">⚠️ Reset All Attendance & Points</button>
@@ -542,7 +687,6 @@
 
         let isAdmin = false;
         let currentSort = 'pts-desc';
-        let selectedCategory = ''; 
         let draggedCategoryIndex = null; // Used for drag and drop
 
         document.getElementById('attDate').valueAsDate = new Date();
@@ -576,10 +720,6 @@
                 }
 
                 records = data.records || [];
-            }
-            
-            if(!categories.find(c => c.name === selectedCategory) && categories.length > 0) {
-                selectedCategory = categories[0].name;
             }
             
             renderAll();
@@ -645,7 +785,6 @@
         function renderAll() {
             renderGlobalStats();
             if (isAdmin) {
-                renderCategoryButtons();
                 renderLeaderboard(currentSort);
                 renderCategories();
                 renderMembers();
@@ -833,20 +972,7 @@
         }
 
         function renderCategoryButtons() {
-            const container = document.getElementById('categoryButtons');
-            container.innerHTML = '';
-            
-            categories.forEach(cat => {
-                const btn = document.createElement('button');
-                btn.innerText = `${cat.name} (${cat.points} pt${cat.points > 1 ? 's' : ''})`;
-                btn.className = cat.name === selectedCategory ? 'category-btn active' : 'category-btn';
-                btn.onclick = () => {
-                    selectedCategory = cat.name;
-                    renderCategoryButtons();
-                    renderAttendanceChecklist();
-                };
-                container.appendChild(btn);
-            });
+            // Category buttons removed — attendance now shows all categories as columns
         }
 
         function renderAttendanceChecklist() {
@@ -854,105 +980,154 @@
             container.innerHTML = '';
 
             if (members.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted); text-align:center; padding: 2rem 0;">No members in directory.</p>';
+                container.innerHTML = '<p style="color: var(--text-muted); text-align:center; padding: 2rem 0;">No members in directory. Add members in the Members tab.</p>';
+                return;
+            }
+
+            if (categories.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align:center; padding: 2rem 0;">No categories configured. Add them in the Categories tab.</p>';
                 return;
             }
 
             const date = document.getElementById('attDate').value;
-            const categoryName = selectedCategory;
-            
-            const activeCategory = categories.find(c => c.name === categoryName);
-            const catType = activeCategory ? activeCategory.type : 'Present/Absent';
 
-            const existingRecord = records.find(r => r.date === date && r.category === categoryName);
-            let attendanceMap = {};
-            if (existingRecord) {
-                existingRecord.attendances.forEach(a => {
-                    attendanceMap[a.name] = a.status;
-                });
-            }
-
-            let sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
-
-            sortedMembers.forEach((member, index) => {
-                const currentStatus = attendanceMap[member.name] || '';
-                let controlsHTML = '';
-
-                if (catType === 'Present/Absent') {
-                    const isPresent = (currentStatus === 'Present' || currentStatus === '') ? 'checked' : '';
-                    const isAbsent = currentStatus === 'Absent' ? 'checked' : '';
-                    controlsHTML = `
-                        <input type="radio" id="present_${index}" name="status_${member.code}" value="Present" ${isPresent}>
-                        <label for="present_${index}">Present</label>
-                        <input type="radio" id="absent_${index}" name="status_${member.code}" value="Absent" ${isAbsent}>
-                        <label for="absent_${index}">Absent</label>
-                    `;
-                } else if (catType === 'Done Only') {
-                    const isDone = currentStatus === 'Done' ? 'checked' : '';
-                    controlsHTML = `
-                        <input type="checkbox" id="done_${index}" name="status_${member.code}" value="Done" ${isDone}>
-                        <label for="done_${index}">Done</label>
-                    `;
-                } else if (catType === 'Custom Text') {
-                    const displayValue = currentStatus === 'None' ? '' : currentStatus;
-                    controlsHTML = `
-                        <input type="text" id="custom_${index}" name="status_${member.code}" class="custom-text-input" value="${displayValue}" placeholder="Enter remark...">
-                    `;
+            // Pre-load existing records for ALL categories at once
+            const attendanceMaps = {};
+            categories.forEach(cat => {
+                attendanceMaps[cat.name] = {};
+                const existing = records.find(r => r.date === date && r.category === cat.name);
+                if (existing) {
+                    existing.attendances.forEach(a => { attendanceMaps[cat.name][a.name] = a.status; });
                 }
-
-                container.innerHTML += `
-                    <div class="attendance-row">
-                        <span class="member-name">${member.name}</span>
-                        <div class="${catType === 'Custom Text' ? '' : 'status-toggle'}">
-                            ${controlsHTML}
-                        </div>
-                    </div>
-                `;
             });
+
+            const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
+
+            // Build column headers for each category
+            const headerCells = categories.map((cat, catIdx) => {
+                const typeShort = cat.type === 'Present/Absent' ? 'P / A'
+                                : cat.type === 'Done Only'     ? 'Done'
+                                :                                'Text';
+                let badgeColor = '#A0AEC0';
+                if (cat.type === 'Present/Absent') badgeColor = '#48A9A6';
+                if (cat.type === 'Done Only')       badgeColor = '#4299E1';
+                return `
+                    <th>
+                        <div class="att-cat-header-name">${cat.name}</div>
+                        <div class="att-cat-header-meta" style="color:${badgeColor};">
+                            ${cat.points} pt${cat.points > 1 ? 's' : ''} &middot; ${typeShort}
+                        </div>
+                    </th>`;
+            }).join('');
+
+            // Build one row per member
+            const rowsHTML = sortedMembers.map((member, mIdx) => {
+                const cells = categories.map((cat, catIdx) => {
+                    const currentStatus = attendanceMaps[cat.name][member.name] || '';
+                    const key = `${member.code}_${catIdx}`;
+                    let ctrl = '';
+
+                    if (cat.type === 'Present/Absent') {
+                        const chkP = (currentStatus === 'Present' || currentStatus === '') ? 'checked' : '';
+                        const chkA = currentStatus === 'Absent' ? 'checked' : '';
+                        ctrl = `
+                            <div class="compact-toggle">
+                                <input type="radio" id="p_${mIdx}_${catIdx}" name="status_${key}" value="Present" ${chkP}>
+                                <label for="p_${mIdx}_${catIdx}">P</label>
+                                <input type="radio" id="a_${mIdx}_${catIdx}" name="status_${key}" value="Absent" ${chkA}>
+                                <label for="a_${mIdx}_${catIdx}">A</label>
+                            </div>`;
+                    } else if (cat.type === 'Done Only') {
+                        const chkD = currentStatus === 'Done' ? 'checked' : '';
+                        ctrl = `
+                            <div class="compact-toggle">
+                                <input type="checkbox" id="d_${mIdx}_${catIdx}" name="status_${key}" value="Done" ${chkD}>
+                                <label for="d_${mIdx}_${catIdx}">✓</label>
+                            </div>`;
+                    } else if (cat.type === 'Custom Text') {
+                        const val = (currentStatus === 'None' ? '' : currentStatus).replace(/"/g, '&quot;');
+                        ctrl = `<input type="text" name="status_${key}" class="compact-text-input" value="${val}" placeholder="Remark…">`;
+                    }
+
+                    return `<td>${ctrl}</td>`;
+                }).join('');
+
+                return `
+                    <tr>
+                        <td class="name-col">${member.name}</td>
+                        ${cells}
+                    </tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="att-table-wrapper">
+                    <table class="att-table">
+                        <thead>
+                            <tr>
+                                <th class="name-col">Member</th>
+                                ${headerCells}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHTML}
+                        </tbody>
+                    </table>
+                </div>`;
         }
 
         function saveAttendance() {
             const date = document.getElementById('attDate').value;
-            const categoryName = selectedCategory;
 
-            if (!date || !categoryName) {
-                alert("Please select a date and ministry category.");
+            if (!date) {
+                alert("Please select a date.");
                 return;
             }
-            if (members.length === 0) return;
+            if (members.length === 0 || categories.length === 0) return;
 
-            const activeCategory = categories.find(c => c.name === categoryName);
-            const catType = activeCategory ? activeCategory.type : 'Present/Absent';
+            const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
 
-            const attendances = [];
-            members.forEach(member => {
-                let finalStatus = '';
-                if (catType === 'Present/Absent') {
-                    const checkedEl = document.querySelector(`input[name="status_${member.code}"]:checked`);
-                    finalStatus = checkedEl ? checkedEl.value : 'Absent';
-                } else if (catType === 'Done Only') {
-                    const checkbox = document.querySelector(`input[name="status_${member.code}"]`);
-                    finalStatus = checkbox.checked ? 'Done' : 'Not Done';
-                } else if (catType === 'Custom Text') {
-                    const inputEl = document.querySelector(`input[name="status_${member.code}"]`);
-                    finalStatus = inputEl.value.trim() || 'None';
-                }
-                attendances.push({ name: member.name, status: finalStatus });
-            });
+            // Warn if any record for this date already exists
+            const overwriteCount = categories.filter(cat =>
+                records.find(r => r.date === date && r.category === cat.name)
+            ).length;
 
-            const existingIndex = records.findIndex(r => r.date === date && r.category === categoryName);
-
-            if (existingIndex >= 0) {
-                if (confirm("A record for this date and category already exists. Overwrite?")) {
-                    records[existingIndex].attendances = attendances;
-                } else return;
-            } else {
-                records.push({ date, category: categoryName, attendances });
+            if (overwriteCount > 0) {
+                if (!confirm(`${overwriteCount} record(s) for this date already exist. Overwrite all?`)) return;
             }
+
+            // Save each category's attendance from the grid
+            categories.forEach((cat, catIdx) => {
+                const catType = cat.type;
+                const attendances = [];
+
+                sortedMembers.forEach(member => {
+                    const key = `${member.code}_${catIdx}`;
+                    let finalStatus = '';
+
+                    if (catType === 'Present/Absent') {
+                        const checkedEl = document.querySelector(`input[name="status_${key}"]:checked`);
+                        finalStatus = checkedEl ? checkedEl.value : 'Absent';
+                    } else if (catType === 'Done Only') {
+                        const checkbox = document.querySelector(`input[name="status_${key}"]`);
+                        finalStatus = (checkbox && checkbox.checked) ? 'Done' : 'Not Done';
+                    } else if (catType === 'Custom Text') {
+                        const inputEl = document.querySelector(`input[name="status_${key}"]`);
+                        finalStatus = inputEl ? (inputEl.value.trim() || 'None') : 'None';
+                    }
+                    attendances.push({ name: member.name, status: finalStatus });
+                });
+
+                const existingIndex = records.findIndex(r => r.date === date && r.category === cat.name);
+                if (existingIndex >= 0) {
+                    records[existingIndex].attendances = attendances;
+                } else {
+                    records.push({ date, category: cat.name, attendances });
+                }
+            });
 
             saveDataToFirebase();
             renderAttendanceChecklist();
-            alert(`Record saved! Points updated across all devices.`);
+            alert(`All records saved! Points updated across all devices.`);
         }
 
         function resetAllPoints() {
