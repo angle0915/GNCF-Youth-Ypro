@@ -17,6 +17,7 @@
             --text-muted: #718096;
             --border: #EDF2F7;
             --present: #48A9A6;
+            --late: #F6AD55;
             --absent: #FC8181;
             --done: #4299E1;
             --neutral: #A0AEC0;
@@ -312,6 +313,12 @@
             box-shadow: 0 2px 5px rgba(72, 169, 166, 0.3);
         }
 
+        .status-toggle input[value="Late"]:checked+label {
+            background: var(--late);
+            color: white;
+            box-shadow: 0 2px 5px rgba(246, 173, 85, 0.3);
+        }
+
         .status-toggle input[value="Absent"]:checked+label {
             background: var(--absent);
             color: white;
@@ -348,6 +355,7 @@
         }
 
         .badge.present { background: #E6FFFA; color: #285E61; }
+        .badge.late { background: #FFFAF0; color: #C05621; }
         .badge.absent { background: #FFF5F5; color: #9B2C2C; }
         .badge.done { background: #EBF8FF; color: #2B6CB0; }
         .badge.custom { background: #EDF2F7; color: #4A5568; }
@@ -431,7 +439,7 @@
             margin-top: 3px;
         }
 
-        /* Compact P/A/Done toggles inside table cells */
+        /* Compact P/L/A/Done toggles inside table cells */
         .compact-toggle {
             display: inline-flex;
             background: #EDF2F7;
@@ -461,6 +469,12 @@
             background: var(--present);
             color: white;
             box-shadow: 0 1px 4px rgba(72,169,166,0.35);
+        }
+
+        .compact-toggle input[value="Late"]:checked + label {
+            background: var(--late);
+            color: white;
+            box-shadow: 0 1px 4px rgba(246,173,85,0.35);
         }
 
         .compact-toggle input[value="Absent"]:checked + label {
@@ -536,6 +550,47 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toggle Switch Styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #CBD5E0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
         }
     </style>
 </head>
@@ -641,15 +696,34 @@
                     <h2>📁 Ministry Categories & Settings</h2>
                     <p style="color: var(--text-muted); font-size: 0.85rem;">Configure response types and point values. <b>Drag and drop the rows below to reorder them!</b></p>
                 </div>
+
+                <!-- General Settings Block -->
+                <div class="card" style="margin-top: 1.5rem; background: #F8FAFC; border: 1px solid var(--border); padding: 1.5rem; border-radius: 16px;">
+                    <div style="margin-bottom: 1rem; border-bottom: 1px dashed var(--border); padding-bottom: 0.8rem;">
+                        <h3 style="font-size: 1.1rem; color: var(--text-main);">⚙️ General Settings</h3>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.95rem;">Show Session Dates to Users</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Enable this to show specific dates on the normal user view.</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="showDatesToggle" onchange="toggleShowDatesSetting(this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
                 
                 <div style="display: flex; flex-direction: column; gap: 0.8rem;">
                     <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
                         <input type="text" id="newCategoryName" placeholder="Category Name" style="flex: 2; min-width: 150px;">
-                        <input type="number" id="newCategoryPoints" placeholder="Pts" value="1" min="1" style="flex: 0.5; min-width: 70px;">
+                        <input type="number" id="newCategoryPoints" placeholder="Pts (Present)" value="1" min="1" style="flex: 0.5; min-width: 70px;">
+                        <input type="number" id="newCategoryLatePoints" placeholder="Pts (Late)" value="0" min="0" style="flex: 0.5; min-width: 70px; display: none;">
                     </div>
                     <div style="display: flex; gap: 0.8rem;">
-                        <select id="newCategoryType" style="flex: 2;">
+                        <select id="newCategoryType" style="flex: 2;" onchange="document.getElementById('newCategoryLatePoints').style.display = this.value === 'Present/Late/Absent' ? 'block' : 'none';">
                             <option value="Present/Absent">Type: Present / Absent</option>
+                            <option value="Present/Late/Absent">Type: Present / Late / Absent</option>
                             <option value="Done Only">Type: Done Only</option>
                             <option value="Custom Text">Type: Custom Text</option>
                         </select>
@@ -684,10 +758,11 @@
         let members = [];
         let categories = [];
         let records = [];
+        let showDatesToUsers = false; 
 
         let isAdmin = false;
         let currentSort = 'pts-desc';
-        let draggedCategoryIndex = null; // Used for drag and drop
+        let draggedCategoryIndex = null; 
 
         document.getElementById('attDate').valueAsDate = new Date();
         document.getElementById('attDate').addEventListener('change', () => {
@@ -703,19 +778,21 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 members = data.members || [];
+                showDatesToUsers = data.showDatesToUsers || false; 
                 
                 categories = (data.categories || []).map(c => {
-                    if (typeof c === 'string') return { name: c, points: 1, type: 'Present/Absent' };
+                    if (typeof c === 'string') return { name: c, points: 1, latePoints: 0, type: 'Present/Absent' };
                     return {
                         name: c.name,
                         points: c.points || 1,
+                        latePoints: c.latePoints || 0,
                         type: c.type || 'Present/Absent'
                     };
                 });
                 
                 if (categories.length === 0) {
                     categories = [
-                        { name: 'Sunday School', points: 1, type: 'Present/Absent' }
+                        { name: 'Sunday School', points: 1, latePoints: 0, type: 'Present/Absent' }
                     ];
                 }
 
@@ -726,7 +803,7 @@
         });
 
         function saveDataToFirebase() {
-            setDoc(docRef, { members, categories, records }, { merge: true })
+            setDoc(docRef, { members, categories, records, showDatesToUsers }, { merge: true })
                 .then(() => { /* Success */ })
                 .catch((error) => console.error("Error writing document: ", error));
         }
@@ -752,27 +829,34 @@
                 
                 const catData = categories.find(c => c.name === recordCategory);
                 const pointsValue = catData ? Number(catData.points) : 1;
+                const latePointsValue = catData ? Number(catData.latePoints) : 0;
                 const catType = catData ? catData.type : 'Present/Absent';
 
                 record.attendances.forEach(att => {
                     const member = members.find(m => m.name === att.name);
-                    
-                    let getsPoints = false;
                     const status = att.status;
+                    let ptsToAdd = 0;
 
                     if (catType === 'Present/Absent' && status === 'Present') {
-                        getsPoints = true;
+                        ptsToAdd = pointsValue;
+                    } else if (catType === 'Present/Late/Absent') {
+                        if (status === 'Present') ptsToAdd = pointsValue;
+                        else if (status === 'Late') ptsToAdd = latePointsValue;
                     } else if (catType === 'Done Only' && status === 'Done') {
-                        getsPoints = true;
+                        ptsToAdd = pointsValue;
                     } else if (catType === 'Custom Text' && status && status.trim() !== '' && status !== 'None') {
-                        getsPoints = true;
+                        ptsToAdd = pointsValue;
                     }
 
-                    if (status === 'Present' || status === 'Done') getsPoints = true;
-
-                    if (member && getsPoints) {
+                    if (member && ptsToAdd > 0) {
                         if (!presentSessions[member.code].has(uniqueSessionKey)) {
-                            scores[member.code] += pointsValue;
+                            scores[member.code] += ptsToAdd;
+                            presentSessions[member.code].add(uniqueSessionKey);
+                        }
+                    } else if (member && ptsToAdd === 0 && status === 'Late') {
+                        // Edge case: Marked late, but late points set to 0. Add 0 pts to record presence.
+                        if (!presentSessions[member.code].has(uniqueSessionKey)) {
+                            scores[member.code] += 0;
                             presentSessions[member.code].add(uniqueSessionKey);
                         }
                     }
@@ -789,6 +873,14 @@
                 renderCategories();
                 renderMembers();
                 renderAttendanceChecklist();
+                renderSettingsUI();
+            }
+        }
+
+        function renderSettingsUI() {
+            const toggle = document.getElementById('showDatesToggle');
+            if (toggle) {
+                toggle.checked = showDatesToUsers;
             }
         }
 
@@ -825,7 +917,16 @@
                 const myAtt = r.attendances.find(a => a.name === member.name);
                 if (myAtt && myAtt.status !== 'None' && myAtt.status !== 'Not Done' && myAtt.status !== '') {
                     const catData = categories.find(c => c.name === r.category);
-                    const ptVal = catData ? catData.points : 1;
+                    let ptVal = 0;
+                    if (catData) {
+                        if (catData.type === 'Present/Late/Absent' && myAtt.status === 'Late') {
+                            ptVal = Number(catData.latePoints) || 0;
+                        } else {
+                            ptVal = Number(catData.points) || 1;
+                        }
+                    } else {
+                        ptVal = 1;
+                    }
                     myRecords.push({ date: r.date, category: r.category, status: myAtt.status, points: ptVal });
                 }
             });
@@ -839,11 +940,15 @@
                 recent.forEach(r => {
                     let badgeClass = 'custom';
                     if (r.status === 'Present') badgeClass = 'present';
+                    else if (r.status === 'Late') badgeClass = 'late';
                     else if (r.status === 'Absent') badgeClass = 'absent';
                     else if (r.status === 'Done') badgeClass = 'done';
 
-                    const displayDate = new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    const ptsEarned = r.status !== 'Absent' ? `(+${r.points} pts)` : '';
+                    const displayDate = showDatesToUsers 
+                        ? new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                        : 'Recorded Session';
+                        
+                    const ptsEarned = (r.status !== 'Absent' && r.points > 0) ? `(+${r.points} pts)` : (r.status === 'Late' && r.points === 0 ? '(+0 pts)' : '');
                     
                     historyHTML += `
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px dashed var(--border);">
@@ -971,10 +1076,6 @@
             });
         }
 
-        function renderCategoryButtons() {
-            // Category buttons removed — attendance now shows all categories as columns
-        }
-
         function renderAttendanceChecklist() {
             const container = document.getElementById('attendanceChecklist');
             container.innerHTML = '';
@@ -991,7 +1092,6 @@
 
             const date = document.getElementById('attDate').value;
 
-            // Pre-load existing records for ALL categories at once
             const attendanceMaps = {};
             categories.forEach(cat => {
                 attendanceMaps[cat.name] = {};
@@ -1003,24 +1103,29 @@
 
             const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
 
-            // Build column headers for each category
             const headerCells = categories.map((cat, catIdx) => {
                 const typeShort = cat.type === 'Present/Absent' ? 'P / A'
+                                : cat.type === 'Present/Late/Absent' ? 'P / L / A'
                                 : cat.type === 'Done Only'     ? 'Done'
                                 :                                'Text';
                 let badgeColor = '#A0AEC0';
-                if (cat.type === 'Present/Absent') badgeColor = '#48A9A6';
-                if (cat.type === 'Done Only')       badgeColor = '#4299E1';
+                if (cat.type === 'Present/Absent' || cat.type === 'Present/Late/Absent') badgeColor = '#48A9A6';
+                if (cat.type === 'Done Only') badgeColor = '#4299E1';
+
+                let ptsMeta = `${cat.points} pt${cat.points > 1 ? 's' : ''}`;
+                if (cat.type === 'Present/Late/Absent') {
+                    ptsMeta += ` (L: ${cat.latePoints || 0})`;
+                }
+
                 return `
                     <th>
                         <div class="att-cat-header-name">${cat.name}</div>
                         <div class="att-cat-header-meta" style="color:${badgeColor};">
-                            ${cat.points} pt${cat.points > 1 ? 's' : ''} &middot; ${typeShort}
+                            ${ptsMeta} &middot; ${typeShort}
                         </div>
                     </th>`;
             }).join('');
 
-            // Build one row per member
             const rowsHTML = sortedMembers.map((member, mIdx) => {
                 const cells = categories.map((cat, catIdx) => {
                     const currentStatus = attendanceMaps[cat.name][member.name] || '';
@@ -1034,6 +1139,19 @@
                             <div class="compact-toggle">
                                 <input type="radio" id="p_${mIdx}_${catIdx}" name="status_${key}" value="Present" ${chkP}>
                                 <label for="p_${mIdx}_${catIdx}">P</label>
+                                <input type="radio" id="a_${mIdx}_${catIdx}" name="status_${key}" value="Absent" ${chkA}>
+                                <label for="a_${mIdx}_${catIdx}">A</label>
+                            </div>`;
+                    } else if (cat.type === 'Present/Late/Absent') {
+                        const chkP = (currentStatus === 'Present' || currentStatus === '') ? 'checked' : '';
+                        const chkL = currentStatus === 'Late' ? 'checked' : '';
+                        const chkA = currentStatus === 'Absent' ? 'checked' : '';
+                        ctrl = `
+                            <div class="compact-toggle">
+                                <input type="radio" id="p_${mIdx}_${catIdx}" name="status_${key}" value="Present" ${chkP}>
+                                <label for="p_${mIdx}_${catIdx}">P</label>
+                                <input type="radio" id="l_${mIdx}_${catIdx}" name="status_${key}" value="Late" ${chkL}>
+                                <label for="l_${mIdx}_${catIdx}">L</label>
                                 <input type="radio" id="a_${mIdx}_${catIdx}" name="status_${key}" value="Absent" ${chkA}>
                                 <label for="a_${mIdx}_${catIdx}">A</label>
                             </div>`;
@@ -1086,7 +1204,6 @@
 
             const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
 
-            // Warn if any record for this date already exists
             const overwriteCount = categories.filter(cat =>
                 records.find(r => r.date === date && r.category === cat.name)
             ).length;
@@ -1095,7 +1212,6 @@
                 if (!confirm(`${overwriteCount} record(s) for this date already exist. Overwrite all?`)) return;
             }
 
-            // Save each category's attendance from the grid
             categories.forEach((cat, catIdx) => {
                 const catType = cat.type;
                 const attendances = [];
@@ -1104,7 +1220,7 @@
                     const key = `${member.code}_${catIdx}`;
                     let finalStatus = '';
 
-                    if (catType === 'Present/Absent') {
+                    if (catType === 'Present/Absent' || catType === 'Present/Late/Absent') {
                         const checkedEl = document.querySelector(`input[name="status_${key}"]:checked`);
                         finalStatus = checkedEl ? checkedEl.value : 'Absent';
                     } else if (catType === 'Done Only') {
@@ -1175,13 +1291,11 @@
             const droppedCategoryIndex = parseInt(dropTarget.getAttribute('data-index'));
 
             if (draggedCategoryIndex !== null && draggedCategoryIndex !== droppedCategoryIndex) {
-                // Reorder array
                 const movedItem = categories.splice(draggedCategoryIndex, 1)[0];
                 categories.splice(droppedCategoryIndex, 0, movedItem);
                 
                 saveDataToFirebase();
                 renderCategories();
-                renderCategoryButtons(); 
             }
             draggedCategoryIndex = null;
             return false;
@@ -1200,8 +1314,13 @@
 
             categories.forEach((cat, index) => {
                 let badgeColor = '#A0AEC0'; 
-                if (cat.type === 'Present/Absent') badgeColor = '#48A9A6';
+                if (cat.type === 'Present/Absent' || cat.type === 'Present/Late/Absent') badgeColor = '#48A9A6';
                 if (cat.type === 'Done Only') badgeColor = '#4299E1';
+
+                let ptsDisplay = `${cat.points} pt${cat.points > 1 ? 's' : ''}`;
+                if (cat.type === 'Present/Late/Absent') {
+                    ptsDisplay += ` | Late: ${cat.latePoints || 0} pt${(cat.latePoints || 0) !== 1 ? 's' : ''}`;
+                }
 
                 list.innerHTML += `
                     <div class="attendance-row draggable-item" draggable="true" data-index="${index}"
@@ -1215,7 +1334,7 @@
                             <span class="drag-handle" title="Drag to reorder">☰</span>
                             <span class="member-name" style="margin-right: 10px;">${cat.name}</span>
                             <span class="badge" style="margin-right: 6px; background: #E2E8F0; color: ${badgeColor};">${cat.type}</span>
-                            <span class="badge present">${cat.points} pt${cat.points > 1 ? 's' : ''}</span>
+                            <span class="badge present">${ptsDisplay}</span>
                         </div>
                         <div>
                             <button class="btn-secondary" onclick="editCategory(${index})" style="margin-right: 0.5rem;">Edit Pts</button>
@@ -1229,31 +1348,46 @@
         function addCategory() {
             const nameInput = document.getElementById('newCategoryName');
             const ptsInput = document.getElementById('newCategoryPoints');
+            const latePtsInput = document.getElementById('newCategoryLatePoints');
             const typeSelect = document.getElementById('newCategoryType');
             
             const nameVal = nameInput.value.trim();
             const ptsVal = parseInt(ptsInput.value) || 1;
+            const latePtsVal = parseInt(latePtsInput.value) || 0;
             const typeVal = typeSelect.value;
 
             if (nameVal && !categories.find(c => c.name.toLowerCase() === nameVal.toLowerCase())) {
-                categories.push({ name: nameVal, points: ptsVal, type: typeVal });
+                categories.push({ name: nameVal, points: ptsVal, latePoints: latePtsVal, type: typeVal });
                 nameInput.value = '';
                 ptsInput.value = '1';
+                latePtsInput.value = '0';
                 typeSelect.value = 'Present/Absent';
+                document.getElementById('newCategoryLatePoints').style.display = 'none';
                 saveDataToFirebase();
             } else if (nameVal) alert("Category already exists!");
         }
 
         function editCategory(index) {
             const cat = categories[index];
-            const newPtsStr = prompt(`Enter new point value for ${cat.name}:`, cat.points);
+            const newPtsStr = prompt(`Enter new point value for Present in ${cat.name}:`, cat.points);
             
             if (newPtsStr !== null) {
                 const newPts = parseInt(newPtsStr);
-                if (!isNaN(newPts) && newPts > 0) {
+                if (!isNaN(newPts) && newPts >= 0) {
                     categories[index].points = newPts;
+
+                    if (cat.type === 'Present/Late/Absent') {
+                        const newLatePtsStr = prompt(`Enter new point value for Late in ${cat.name}:`, cat.latePoints || 0);
+                        if (newLatePtsStr !== null) {
+                            const newLatePts = parseInt(newLatePtsStr);
+                            if (!isNaN(newLatePts) && newLatePts >= 0) {
+                                categories[index].latePoints = newLatePts;
+                            }
+                        }
+                    }
+
                     saveDataToFirebase();
-                } else alert("Please enter a valid number greater than 0.");
+                } else alert("Please enter a valid number.");
             }
         }
 
@@ -1330,6 +1464,11 @@
                 saveDataToFirebase();
             }
         }
+        
+        function toggleShowDatesSetting(checkbox) {
+            showDatesToUsers = checkbox.checked;
+            saveDataToFirebase();
+        }
 
         // --- BIND GLOBALS FOR HTML ONCLICK EVENTS ---
         window.toggleAdmin = toggleAdmin;
@@ -1350,6 +1489,7 @@
         window.handleDragLeave = handleDragLeave;
         window.handleDrop = handleDrop;
         window.handleDragEnd = handleDragEnd;
+        window.toggleShowDatesSetting = toggleShowDatesSetting;
 
     </script>
 </body>
