@@ -989,8 +989,8 @@
                 document.getElementById('personalResult').classList.add('hidden');
                 renderGlobalStats();
             } else {
-                const pass = prompt("Enter Admin Password (default is 'admin'):");
-                if (pass === "gncf_admin@2026" || pass === "admin") {
+                const pass = prompt("Enter Admin Password:");
+                if (pass === "gncf_admin@2026") {
                     isAdmin = true;
                     localStorage.setItem('isAdmin', 'true');
                     btn.innerText = 'Logout';
