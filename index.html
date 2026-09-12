@@ -1159,7 +1159,7 @@
                         const chkD = currentStatus === 'Done' ? 'checked' : '';
                         ctrl = `
                             <div class="compact-toggle">
-                                <input type="checkbox" id="d_${mIdx}_${catIdx}" name="status_${key}" value="Done" ${chkD}>
+                                <input type="checkbox" id="d_${mIdx}_${catIdx}" name="status_${key}" value="Done" ${chkD} onchange="autoSaveCheckbox('${member.name.replace(/'/g, "\\'")}', '${cat.name.replace(/'/g, "\\'")}', this.checked)">
                                 <label for="d_${mIdx}_${catIdx}">✓</label>
                             </div>`;
                     } else if (cat.type === 'Custom Text') {
@@ -1191,6 +1191,40 @@
                         </tbody>
                     </table>
                 </div>`;
+        }
+        
+        function autoSaveCheckbox(memberName, categoryName, isChecked) {
+            const date = document.getElementById('attDate').value;
+            
+            if (!date) {
+                alert("Please select a date.");
+                // Revert the visual check if there's no date selected
+                event.target.checked = !isChecked;
+                return;
+            }
+
+            // Find the record for the current date and category
+            let existingRecord = records.find(r => r.date === date && r.category === categoryName);
+            
+            if (existingRecord) {
+                // Update existing record
+                let attIndex = existingRecord.attendances.findIndex(a => a.name === memberName);
+                if (attIndex >= 0) {
+                    existingRecord.attendances[attIndex].status = isChecked ? 'Done' : 'Not Done';
+                } else {
+                    existingRecord.attendances.push({ name: memberName, status: isChecked ? 'Done' : 'Not Done' });
+                }
+            } else {
+                // Create new record if none exists for this date/category
+                records.push({
+                    date: date,
+                    category: categoryName,
+                    attendances: [{ name: memberName, status: isChecked ? 'Done' : 'Not Done' }]
+                });
+            }
+
+            // Save changes instantly to Firebase
+            saveDataToFirebase();
         }
 
         function saveAttendance() {
@@ -1490,6 +1524,7 @@
         window.handleDrop = handleDrop;
         window.handleDragEnd = handleDragEnd;
         window.toggleShowDatesSetting = toggleShowDatesSetting;
+        window.autoSaveCheckbox = autoSaveCheckbox;
 
     </script>
 </body>
