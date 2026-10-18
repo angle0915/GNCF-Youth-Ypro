@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#FF705B">
     <title>GNCF Youth & Ypro - Attendance & Points</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -17,7 +18,6 @@
             --text-muted: #718096;
             --border: #EDF2F7;
             --present: #48A9A6;
-            --late: #F6AD55;
             --absent: #FC8181;
             --done: #4299E1;
             --neutral: #A0AEC0;
@@ -313,12 +313,6 @@
             box-shadow: 0 2px 5px rgba(72, 169, 166, 0.3);
         }
 
-        .status-toggle input[value="Late"]:checked+label {
-            background: var(--late);
-            color: white;
-            box-shadow: 0 2px 5px rgba(246, 173, 85, 0.3);
-        }
-
         .status-toggle input[value="Absent"]:checked+label {
             background: var(--absent);
             color: white;
@@ -355,7 +349,7 @@
         }
 
         .badge.present { background: #E6FFFA; color: #285E61; }
-        .badge.late { background: #FFFAF0; color: #C05621; }
+        .badge.late { background: #FFF0EC; color: #9C3C2E; }
         .badge.absent { background: #FFF5F5; color: #9B2C2C; }
         .badge.done { background: #EBF8FF; color: #2B6CB0; }
         .badge.custom { background: #EDF2F7; color: #4A5568; }
@@ -439,7 +433,7 @@
             margin-top: 3px;
         }
 
-        /* Compact P/L/A/Done toggles inside table cells */
+        /* Compact P/A/Done toggles inside table cells */
         .compact-toggle {
             display: inline-flex;
             background: #EDF2F7;
@@ -472,9 +466,9 @@
         }
 
         .compact-toggle input[value="Late"]:checked + label {
-            background: var(--late);
+            background: var(--primary);
             color: white;
-            box-shadow: 0 1px 4px rgba(246,173,85,0.35);
+            box-shadow: 0 1px 4px rgba(255,112,91,0.28);
         }
 
         .compact-toggle input[value="Absent"]:checked + label {
@@ -551,46 +545,466 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+    
 
-        /* Toggle Switch Styles */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 46px;
-            height: 24px;
+        /* ---- Responsive refresh: same palette, clearer touch targets ---- */
+        html { scroll-behavior: smooth; }
+        body { min-width: 320px; font-size: 15px; line-height: 1.5; }
+        header { gap: 1rem; padding: .9rem clamp(1rem, 4vw, 2.5rem); }
+        header h1 { font-size: clamp(1rem, 2.3vw, 1.35rem); line-height: 1.3; }
+        button { min-height: 44px; touch-action: manipulation; }
+        button:focus-visible, input:focus-visible, select:focus-visible, label:focus-visible {
+            outline: 3px solid rgba(255, 112, 91, .32);
+            outline-offset: 2px;
         }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .container { width: min(100% - 2rem, 1100px); max-width: 1100px; margin: 1.4rem auto 2.5rem; padding: 0; }
+        .card { padding: clamp(1rem, 2.5vw, 1.8rem); border-radius: 20px; box-shadow: 0 8px 24px rgba(45, 55, 72, .045); }
+        .card-header { margin-bottom: 1.25rem; }
+        .card-header h2 { line-height: 1.35; }
+        .admin-nav { position: sticky; top: 78px; z-index: 50; scrollbar-width: thin; }
+        .admin-nav button { min-height: 44px; }
+        .flex-group { align-items: stretch; }
+        .flex-group > input { min-width: 0; flex: 1; }
+        input[type="text"], input[type="number"], input[type="date"], select { min-height: 46px; }
+        .hidden { display: none !important; }
+
+        /* Attendance cards — each ministry category is a separate save unit. */
+        .attendance-guidance {
+            display: flex; align-items: flex-start; gap: .75rem;
+            padding: .9rem 1rem; margin: 1rem 0 1.2rem;
+            border: 1px solid rgba(72, 169, 166, .24); border-radius: 14px;
+            background: rgba(72, 169, 166, .075); color: var(--text-main); font-size: .88rem;
         }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #CBD5E0;
-            transition: .4s;
-            border-radius: 34px;
+        .attendance-guidance .guidance-icon { font-size: 1.15rem; line-height: 1.35; }
+        .attendance-category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+        .attendance-category-card {
+            min-width: 0; overflow: hidden; border: 1px solid #E8EDF2; border-radius: 18px;
+            background: var(--card-bg); box-shadow: 0 4px 14px rgba(45, 55, 72, .035);
         }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+        .attendance-category-head {
+            display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem;
+            padding: 1rem 1rem .9rem; border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, #FFFFFF, #FFFBFA);
         }
-        input:checked + .slider {
-            background-color: var(--primary);
+        .category-heading-main { min-width: 0; display: flex; align-items: flex-start; gap: .75rem; }
+        .category-icon-tile {
+            display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px;
+            background: #FFF0EC; border-radius: 13px; font-size: 1.2rem;
         }
-        input:checked + .slider:before {
-            transform: translateX(22px);
+        .attendance-category-title { font-size: 1rem; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+        .category-meta-row { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .45rem; }
+        .category-meta-chip { display: inline-flex; align-items: center; gap: .25rem; padding: .22rem .55rem; border-radius: 999px; background: #F5F7FA; color: var(--text-muted); font-size: .71rem; font-weight: 700; }
+        .category-meta-chip.points { background: #E6FFFA; color: #285E61; }
+        .category-session-state { max-width: 120px; flex: 0 0 auto; text-align: right; font-size: .7rem; font-weight: 700; line-height: 1.35; color: var(--text-muted); }
+        .category-session-state.is-saved { color: #2F855A; }
+        .category-member-list { padding: .3rem .9rem .25rem; }
+        .category-member-row {
+            display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+            padding: .7rem .1rem; border-bottom: 1px solid #F0F3F6; min-width: 0;
+        }
+        .category-member-row:last-child { border-bottom: none; }
+        .category-member-identity { min-width: 0; flex: 1; }
+        .category-member-name { font-size: .88rem; font-weight: 600; overflow-wrap: anywhere; }
+        .category-member-code { color: var(--text-muted); font-size: .69rem; letter-spacing: .04em; margin-top: .08rem; }
+        .category-member-controls { flex: 0 0 auto; }
+        .category-member-controls .compact-toggle { gap: 3px; border-radius: 10px; }
+        .category-member-controls .compact-toggle label { min-width: 48px; padding: .52rem .55rem; font-size: .73rem; }
+        .category-member-controls .compact-toggle input[value="Done"] + label { min-width: 66px; }
+        .member-save-state { display: block; min-height: 1rem; margin-top: .25rem; color: var(--text-muted); font-size: .67rem; text-align: right; }
+        .member-save-state.is-saving { color: var(--primary); }
+        .member-save-state.is-saved { color: #2F855A; }
+        .member-save-state.is-error { color: #C53030; }
+        .attendance-tools { display: grid; gap: .4rem; margin: 1rem 0 1.1rem; }
+        .attendance-tools p { color: var(--text-muted); font-size: .78rem; }
+        .category-status-summary { margin-top: .5rem; color: var(--text-muted); font-size: .7rem; font-weight: 600; line-height: 1.5; }
+        .category-member-row[data-hidden="true"] { display: none !important; }
+        .bulk-mark-button { background: #EDF2F7; color: var(--text-main); border: 1px solid #E2E8F0; box-shadow: none; padding: .65rem .75rem; font-size: .76rem; border-radius: 10px; }
+        .bulk-mark-button:hover { background: #E2E8F0; }
+        .category-member-controls .compact-text-input { width: min(180px, 100%) !important; min-height: 42px; }
+        .attendance-category-footer {
+            display: flex; align-items: center; justify-content: space-between; gap: .75rem;
+            padding: .9rem 1rem 1rem; border-top: 1px solid var(--border); background: #FCFDFE;
+        }
+        .category-footer-note { color: var(--text-muted); font-size: .73rem; line-height: 1.45; }
+        .save-category-btn { flex: 0 0 auto; padding: .68rem .95rem; border-radius: 11px; font-size: .82rem; box-shadow: 0 4px 10px rgba(255, 112, 91, .14); }
+        .attendance-bulk-actions { margin-top: 1.25rem; padding: 1rem; border: 1px dashed #E3D4D0; border-radius: 15px; background: #FFFBFA; }
+        .attendance-bulk-actions p { margin-bottom: .7rem; font-size: .82rem; color: var(--text-muted); }
+        .attendance-bulk-actions button { width: 100%; }
+
+        /* Category settings are full cards too, while keeping drag-and-drop. */
+        .category-create-form { display: grid; gap: .75rem; }
+        .category-create-fields { display: grid; grid-template-columns: minmax(0, 2fr) minmax(90px, .7fr); gap: .75rem; }
+        .category-create-actions { grid-template-columns: minmax(0, 1.6fr) minmax(100px, .7fr); }
+        .category-settings-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; margin-top: 1.5rem; }
+        .category-setting-card {
+            min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem;
+            margin: 0; padding: 1rem; border: 1px solid #E8EDF2 !important; border-radius: 16px;
+            background: #FFFFFF; box-shadow: 0 4px 13px rgba(45, 55, 72, .035);
+        }
+        .category-setting-card.drag-over { border: 2px solid var(--primary) !important; background: #FFF5F3; }
+        .category-setting-main { display: flex; align-items: flex-start; gap: .7rem; min-width: 0; }
+        .category-setting-main .drag-handle { flex: 0 0 auto; margin: .1rem 0 0; padding: .25rem; color: #A0AEC0; }
+        .category-setting-copy { min-width: 0; flex: 1; }
+        .category-setting-title { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; font-size: .97rem; font-weight: 700; overflow-wrap: anywhere; }
+        .category-setting-description { margin-top: .35rem; font-size: .76rem; color: var(--text-muted); line-height: 1.5; }
+        .category-setting-points { display: inline-flex; margin-top: .65rem; padding: .25rem .65rem; border-radius: 999px; background: #E6FFFA; color: #285E61; font-size: .75rem; font-weight: 700; }
+        .category-setting-actions { display: flex; gap: .55rem; }
+        .category-setting-actions button { flex: 1; padding: .55rem .75rem; font-size: .8rem; }
+        .category-type-badge { text-transform: none; letter-spacing: 0; max-width: unset; font-size: .68rem; padding: .25rem .55rem; }
+
+        .category-score-fieldset {
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem;
+            padding: .9rem; border: 1px solid var(--border); border-radius: 14px; background: #FFFBFA;
+        }
+        .score-input-item { display: grid; gap: .35rem; min-width: 0; }
+        .score-input-item label, .category-standard-points label {
+            color: var(--text-muted); font-size: .75rem; font-weight: 700;
+        }
+        .score-input-item input, .category-standard-points input { min-width: 0; width: 100%; padding: .65rem .7rem; }
+        .category-standard-points { display: grid; grid-template-columns: minmax(0, 1fr) minmax(110px, 180px); gap: .7rem; align-items: end; }
+        .category-standard-points label { align-self: center; }
+        .category-create-actions { display: flex; justify-content: flex-end; }
+        .category-create-actions button { min-width: 180px; }
+        .category-form-help { color: var(--text-muted); font-size: .75rem; line-height: 1.5; }
+        .category-setting-points { white-space: normal; line-height: 1.6; border-radius: 12px; }
+        .category-score-rules { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .65rem; }
+        .category-score-rule { display: inline-flex; align-items: center; gap: .25rem; padding: .25rem .5rem; border-radius: 8px; background: #F5F7FA; color: var(--text-main); font-size: .73rem; font-weight: 700; }
+        .category-score-rule strong { color: var(--secondary); }
+        .category-edit-dialog {
+            width: min(92vw, 560px); max-width: 560px; border: 1px solid #E8EDF2; border-radius: 20px;
+            padding: clamp(1rem, 3vw, 1.4rem); color: var(--text-main); background: var(--card-bg);
+            box-shadow: 0 24px 80px rgba(45, 55, 72, .25);
+        }
+        .category-edit-dialog::backdrop { background: rgba(45, 55, 72, .42); backdrop-filter: blur(3px); }
+        .category-edit-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+        .category-edit-dialog-head h2 { font-size: 1.2rem; line-height: 1.35; }
+        .category-edit-dialog-head p:not(.category-edit-eyebrow) { margin-top: .3rem; color: var(--text-muted); font-size: .8rem; }
+        .category-edit-eyebrow { color: var(--primary); font-size: .65rem; font-weight: 800; letter-spacing: .09em; margin-bottom: .3rem; }
+        .dialog-close-button { min-width: 40px; width: 40px; min-height: 40px; padding: 0; background: #F5F7FA; color: var(--text-main); box-shadow: none; font-size: 1.5rem; }
+        .category-edit-actions { display: flex; justify-content: flex-end; gap: .65rem; margin-top: 1.2rem; }
+        .category-edit-actions button { min-width: 110px; }
+        .category-score-summary { margin-top: .6rem; color: var(--text-muted); font-size: .72rem; font-weight: 700; line-height: 1.55; }
+
+        @media (max-width: 620px) {
+            .category-score-fieldset { grid-template-columns: minmax(0, 1fr); gap: .6rem; }
+            .category-standard-points { grid-template-columns: minmax(0, 1fr); }
+            .category-create-actions button { width: 100%; }
+            .category-edit-dialog { width: calc(100vw - 1rem); padding: 1rem; }
+            .category-edit-dialog .category-score-fieldset { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: .65rem; gap: .45rem; }
+            .category-edit-dialog .score-input-item label { font-size: .68rem; }
+            .category-edit-dialog .score-input-item input { padding: .6rem .4rem; font-size: .92rem; }
+            .category-edit-actions { flex-direction: column-reverse; }
+            .category-edit-actions button { width: 100%; }
+        }
+
+        @media (max-width: 850px) {
+            .attendance-category-grid, .category-settings-list { grid-template-columns: minmax(0, 1fr); }
+            .attendance-category-head { padding: .95rem; }
+            .category-member-list { padding-right: .8rem; padding-left: .8rem; }
+        }
+        @media (max-width: 620px) {
+            header { position: sticky; top: 0; padding: .75rem 1rem; align-items: center; gap: .65rem; }
+            header h1 { max-width: 68%; font-size: .98rem; gap: .4rem; }
+            header #authBtn { padding: .58rem .72rem; min-height: 42px; font-size: .78rem; border-radius: 10px; white-space: nowrap; }
+            .container { width: calc(100% - 1rem); margin: .7rem auto 1.5rem; }
+            .card { padding: 1rem; margin-bottom: .85rem; border-radius: 17px; }
+            .card-header { margin-bottom: 1rem; padding-bottom: .85rem; }
+            .card-header h2 { font-size: 1.08rem; }
+            .card-header p { font-size: .81rem !important; }
+            .admin-nav { top: 65px; margin-bottom: .9rem; gap: .35rem; padding: .35rem; border-radius: 12px; }
+            .admin-nav button { flex: 0 0 auto; min-width: max-content; padding: .6rem .8rem; font-size: .8rem; }
+            .flex-group { flex-direction: column; gap: .65rem; }
+            .flex-group button { width: 100%; }
+            .stat-box { padding: 1.1rem .75rem; }
+            .stat-number { font-size: 2rem; }
+            .attendance-guidance { padding: .8rem; font-size: .8rem; }
+            .attendance-category-head { gap: .4rem; }
+            .category-session-state { max-width: 94px; font-size: .65rem; }
+            .category-icon-tile { width: 38px; height: 38px; flex-basis: 38px; border-radius: 11px; }
+            .attendance-category-title { font-size: .95rem; }
+            .category-member-row { align-items: flex-start; flex-direction: column; gap: .45rem; padding: .75rem .05rem; }
+            .category-member-identity { width: 100%; }
+            .category-member-controls { width: 100%; }
+            .category-member-controls .compact-toggle { display: flex; width: 100%; }
+            .category-member-controls .compact-toggle label { min-width: 0; flex: 1; padding: .6rem .65rem; font-size: .8rem; }
+            .category-member-controls .compact-toggle input[value="Done"] + label { min-width: 0; }
+            .category-member-controls .compact-toggle label { padding: .62rem .35rem; font-size: .78rem; }
+            .member-save-state { text-align: left; }
+            .category-member-controls .compact-text-input { width: 100% !important; }
+            .attendance-category-footer { align-items: stretch; flex-direction: column; gap: .7rem; }
+            .bulk-mark-button { width: 100%; min-height: 42px; }
+            .category-create-fields { grid-template-columns: minmax(0, 1fr); }
+            .category-create-actions { display: flex; }
+            .category-setting-actions { width: 100%; }
+            .category-setting-card { padding: .9rem; }
+            .leaderboard-controls button { flex: 1 1 auto; }
+            .attendance-row { gap: .6rem; }
+            .member-code { margin-left: 0; display: inline-block; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+        }
+
+    
+        /* ===== v4 refresh: clearer hierarchy, faster attendance, thumb-friendly nav ===== */
+        :root { --hdr: 64px; --ink: #1F2933; --teal-d: #1F7A77; --coral-ink: #C2412D; }
+        header { min-height: var(--hdr); }
+        button { color: #33130B; }
+        button.btn-outline { color: var(--coral-ink); border-color: var(--coral-ink); }
+        button.btn-outline:hover { background: var(--primary); color: #33130B; border-color: var(--primary); }
+        button.btn-danger { color: #B83232; }
+        input[type="password"] { padding: .8rem 1rem; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; width: 100%; min-height: 46px; background: #FAFAFA; outline: none; }
+        .badge { text-transform: none; letter-spacing: 0; }
+        .category-edit-eyebrow { display: none; }
+        .empty { text-align: center; color: var(--text-muted); padding: 1.5rem 0; font-size: .9rem; }
+        .avatar { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; background: #FFE3DC; color: #7A2417; font-weight: 700; font-size: .85rem; }
+        .avatar.lg { width: 52px; height: 52px; flex-basis: 52px; font-size: 1.05rem; }
+
+        /* Navigation: tabs on desktop, bottom bar on phones */
+        .admin-nav { position: static; }
+        .admin-nav button { display: flex; align-items: center; justify-content: center; gap: .45rem; }
+        .admin-nav button.active { background: #FFEDE8; color: var(--coral-ink); }
+        #toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 16px); max-width: min(92vw, 420px); padding: .75rem 1.1rem; border-radius: 12px; background: var(--ink); color: #fff; font-size: .88rem; box-shadow: 0 10px 30px rgba(31,41,51,.25); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 300; }
+        #toast.show { opacity: 1; transform: translate(-50%, 0); }
+        @media (max-width: 720px) {
+            .admin-nav { position: fixed; left: 0; right: 0; bottom: 0; top: auto; margin: 0; gap: .2rem; padding: .4rem .5rem calc(.4rem + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; box-shadow: 0 -6px 24px rgba(31,41,51,.12); z-index: 90; }
+            .admin-nav button { flex: 1 1 0; flex-direction: column; gap: 1px; min-width: 0; padding: .4rem .2rem; font-size: .72rem; }
+            .admin-nav .ni { font-size: 1.25rem; line-height: 1; }
+            .container { padding-bottom: 84px; }
+            #toast { bottom: 92px; }
+            .code-form { flex-direction: column; }
+        }
+
+        /* Attendance */
+        .att-date-row { flex-wrap: wrap; gap: .5rem; }
+        .att-date-row input[type="date"] { width: auto; flex: 1 1 150px; max-width: 210px; }
+        .att-date-row .btn-secondary { min-width: 44px; padding: .5rem .8rem; }
+        .att-date-label { font-size: .85rem; font-weight: 500; }
+        .cat-tabs-wrap { position: sticky; top: var(--hdr); z-index: 30; background: var(--card-bg); margin: 1rem 0 .25rem; }
+        .cat-tabs { display: flex; gap: .25rem; overflow-x: auto; scrollbar-width: none; }
+        .cat-tab { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 96px; padding: .45rem .9rem; background: transparent; color: var(--text-muted); box-shadow: none; border-radius: 10px 10px 0 0; border-bottom: 3px solid transparent; font-size: .86rem; line-height: 1.25; }
+        .cat-tab:hover { background: #FFF5F2; }
+        .cat-tab small { font-size: .72rem; font-weight: 500; }
+        .cat-tab.active { color: var(--ink); background: #FFF1ED; border-bottom-color: var(--primary); }
+        .att-progress { height: 4px; background: var(--border); overflow: hidden; }
+        .att-progress i { display: block; height: 100%; width: 0; background: var(--teal-d); transition: width .3s; }
+        .attendance-tools { margin: .8rem 0; }
+        .attendance-tools small { color: var(--text-muted); font-size: .76rem; }
+        .filter-chips { display: flex; gap: .4rem; overflow-x: auto; padding: .1rem 0 .2rem; scrollbar-width: none; }
+        .filter-chip { flex: 0 0 auto; min-height: 38px; padding: .35rem .85rem; border-radius: 999px; background: #F1F5F9; color: var(--ink); box-shadow: none; font-size: .8rem; font-weight: 600; }
+        .filter-chip:hover { background: #E2E8F0; }
+        .filter-chip b { margin-left: .4rem; }
+        .filter-chip.active { background: var(--ink); color: #fff; }
+        .attendance-category-grid { grid-template-columns: minmax(0, 1fr); }
+        .attendance-category-card { display: flex; flex-direction: column; max-width: 760px; margin: 0 auto; }
+        .attendance-category-footer { order: 1; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; border-top: none; border-bottom: 1px solid var(--border); }
+        .category-member-list { order: 2; padding: .2rem 1rem; }
+        .category-footer-note { flex: 1 1 100%; }
+        .bulk-mark-button { flex: 1 1 140px; width: auto; min-height: 42px; }
+        .category-status-summary { display: none; }
+        .category-member-row { flex-direction: row; align-items: center; flex-wrap: wrap; gap: .35rem .75rem; padding: .55rem .1rem; }
+        .category-member-identity { flex: 1 1 120px; width: auto; }
+        .category-member-controls { position: relative; flex: 0 0 auto; width: auto; }
+        .category-member-controls .compact-toggle { display: inline-flex; width: auto; }
+        .category-member-controls .compact-toggle label { flex: 0 0 auto; min-width: 0; padding: .72rem .65rem; font-size: .78rem; text-align: center; }
+        .category-member-controls .compact-toggle input[value="Done"] + label { min-width: 76px; }
+        .member-save-state:not(.is-saving):not(.is-error) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+        @media (max-width: 480px) {
+            .category-member-controls { flex: 1 1 100%; }
+            .category-member-controls .compact-toggle { display: flex; width: 100%; }
+            .category-member-controls .compact-toggle label { flex: 1; }
+        }
+        .compact-toggle input[value="Present"]:checked + label { background: var(--teal-d); color: #fff; }
+        .compact-toggle input[value="Present"]:checked + label::before { content: "✓ "; }
+        .compact-toggle input[value="Late"]:checked + label { background: #FFC247; color: #3A2600; }
+        .compact-toggle input[value="Late"]:checked + label::before { content: "◷ "; }
+        .compact-toggle input[value="Absent"]:checked + label { background: #C23B3B; color: #fff; }
+        .compact-toggle input[value="Absent"]:checked + label::before { content: "✕ "; }
+        .compact-toggle input[value="Done"]:checked + label { background: #2B6CB0; color: #fff; }
+        .compact-toggle input:focus-visible + label { outline: 3px solid rgba(31,41,51,.35); outline-offset: 1px; }
+        .att-empty { padding: 1.5rem 0; text-align: center; color: var(--text-muted); font-size: .9rem; }
+
+        /* Leaderboard */
+        .leaderboard-controls { display: inline-flex; max-width: 100%; gap: .25rem; padding: .25rem; background: #F1F5F9; border-radius: 12px; }
+        .leaderboard-controls button { flex: 1 1 auto; background: transparent; color: var(--text-muted); box-shadow: none; border-radius: 9px; font-size: .84rem; padding: .5rem .9rem; }
+        .leaderboard-controls button.active-sort { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(31,41,51,.12); }
+        .podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; align-items: end; margin: 0 0 1.25rem; }
+        .podium-spot { display: flex; flex-direction: column; align-items: center; gap: .3rem; min-width: 0; text-align: center; }
+        .podium-name { font-weight: 600; font-size: .88rem; line-height: 1.25; overflow-wrap: anywhere; }
+        .podium-pts { font-size: .8rem; font-weight: 600; color: var(--text-muted); }
+        .podium-block { width: 100%; display: flex; justify-content: center; padding-top: .5rem; border-radius: 14px 14px 0 0; background: #FFE3DC; font-size: 1.6rem; font-weight: 700; color: #7A2417; }
+        .place-1 .podium-block { height: 110px; background: #FFC247; color: #3A2600; }
+        .place-2 .podium-block { height: 80px; }
+        .place-3 .podium-block { height: 60px; }
+        .lb-row { display: flex; align-items: center; gap: .8rem; padding: .7rem .2rem; border-bottom: 1px solid var(--border); }
+        .lb-rank { flex: 0 0 2rem; text-align: center; font-weight: 700; color: var(--text-muted); }
+        .lb-main { flex: 1; min-width: 0; }
+        .lb-bar { height: 6px; margin-top: .4rem; border-radius: 99px; background: #F1F5F9; overflow: hidden; }
+        .lb-bar i { display: block; height: 100%; border-radius: 99px; background: var(--primary); }
+        .lb-pts { min-width: 3.5rem; text-align: right; font-weight: 700; font-size: 1.05rem; }
+        .lb-pts small { display: block; font-size: .68rem; font-weight: 500; color: var(--text-muted); }
+
+        /* Members */
+        .member-tools { display: flex; align-items: center; gap: .8rem; margin: 1rem 0 .5rem; }
+        .member-tools input { flex: 1; }
+        .member-count { flex: 0 0 auto; color: var(--text-muted); font-size: .82rem; }
+        .member-card { display: flex; align-items: center; flex-wrap: wrap; gap: .8rem; padding: .8rem .2rem; border-bottom: 1px solid var(--border); }
+        .member-card-main { flex: 1 1 160px; min-width: 0; }
+        .code-chip { min-height: 32px; margin-top: .25rem; padding: .15rem .6rem; border-radius: 8px; border: 1px dashed #F2B8AB; background: #FFF1ED; color: var(--coral-ink); box-shadow: none; font-family: monospace; font-size: .85rem; letter-spacing: .08em; }
+        .code-chip span { margin-left: .4rem; font-family: 'Poppins', sans-serif; font-size: .7rem; letter-spacing: 0; color: var(--text-muted); }
+        .member-card-pts { font-weight: 700; text-align: right; }
+        .member-card-pts small { display: block; font-size: .68rem; font-weight: 500; color: var(--text-muted); }
+        .member-card-actions { display: flex; flex: 1 1 100%; justify-content: flex-end; gap: .4rem; }
+        .member-card-actions button { min-height: 38px; padding: .4rem .8rem; font-size: .8rem; }
+        @media (min-width: 700px) { .member-card-actions { flex: 0 0 auto; } }
+        .danger-zone { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; padding: 1rem 1.1rem; border: 1px solid #FED7D7; border-radius: 14px; background: #FFF9F9; }
+        .danger-zone p { margin-top: .2rem; font-size: .8rem; color: var(--text-muted); }
+
+        /* Visitor record */
+        .code-form { display: flex; gap: .6rem; }
+        .code-form input { flex: 1; min-height: 56px; font-family: monospace; font-size: 1.4rem; letter-spacing: .35em; text-align: center; text-transform: uppercase; }
+        .code-form button { min-width: 150px; }
+        .lookup-error { margin-top: 1rem; padding: .9rem 1rem; border-radius: 12px; background: #FFF5F5; color: #9B2C2C; font-weight: 500; text-align: center; }
+        .record-card { background: #fff; border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+        .record-top { display: flex; align-items: center; gap: .9rem; padding: 1.1rem 1.25rem; background: #FFF1ED; border-bottom: 2px dashed #F2B8AB; }
+        .record-top h3 { font-size: 1.15rem; line-height: 1.3; }
+        .record-top p { font-size: .82rem; color: var(--text-muted); }
+        .record-points { display: flex; align-items: baseline; gap: .6rem; padding: 1.2rem 1.25rem 0; }
+        .record-points b { font-size: 3rem; line-height: 1; color: var(--teal-d); }
+        .record-points span { color: var(--text-muted); font-weight: 500; }
+        .record-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; padding: 1rem 1.25rem; }
+        .record-stats div { padding: .7rem; border-radius: 12px; background: #F8FAFC; text-align: center; }
+        .record-stats b { display: block; font-size: 1.2rem; }
+        .record-stats span { font-size: .75rem; color: var(--text-muted); }
+        .record-history { padding: 0 1.25rem 1.1rem; }
+        .record-history h4 { margin: .4rem 0; font-size: .95rem; }
+        .history-row { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .75rem 0; border-bottom: 1px dashed var(--border); }
+        .history-row small { display: block; color: var(--text-muted); }
+        .overview { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .overview b { display: block; font-size: 1.8rem; line-height: 1.1; color: var(--teal-d); }
+        .overview span { font-size: .85rem; color: var(--text-muted); }
+        /* =====================================================================
+           v5: smartphone portrait + landscape support
+           ===================================================================== */
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; } /* stop iOS inflating text on rotate */
+        :root {
+            --safe-t: env(safe-area-inset-top, 0px);
+            --safe-r: env(safe-area-inset-right, 0px);
+            --safe-b: env(safe-area-inset-bottom, 0px);
+            --safe-l: env(safe-area-inset-left, 0px);
+            --hdr: calc(74px + var(--safe-t));
+            --rail: calc(78px + var(--safe-l));
+        }
+        header {
+            padding-top: calc(.9rem + var(--safe-t));
+            padding-left: max(clamp(1rem, 4vw, 2.5rem), var(--safe-l));
+            padding-right: max(clamp(1rem, 4vw, 2.5rem), var(--safe-r));
+        }
+
+        /* Dialogs never taller than the screen; scroll inside if needed */
+        .category-edit-dialog { max-height: calc(100vh - 1rem); max-height: calc(100dvh - 1rem); overflow-y: auto; }
+
+        /* Phone/tablet portrait + tablets: sticky stack = header, then tab bar, then category tabs */
+        @media (min-width: 721px) {
+            .admin-nav { top: calc(var(--hdr) + 6px); }
+            .cat-tabs-wrap { top: calc(var(--hdr) + 66px); }
+        }
+
+        /* Touch screens: 16px inputs (prevents iOS zoom-on-focus) + arrow buttons instead of drag handles */
+        @media (pointer: coarse) {
+            .compact-text-input,
+            .score-input-item input,
+            .category-standard-points input,
+            .category-edit-dialog .score-input-item input { font-size: 16px !important; }
+            .drag-handle { display: none; }
+        }
+        .category-move { display: flex; flex: 0 0 auto; gap: .35rem; }
+        .category-move button { flex: 0 0 44px; min-width: 44px; padding: .4rem 0; font-size: 1rem; }
+        .category-move button:disabled { opacity: .35; cursor: default; }
+        @media (pointer: fine) { .category-move { display: none; } }
+
+        /* ---------- Portrait phones ---------- */
+        @media (max-width: 620px) {
+            :root { --hdr: calc(66px + var(--safe-t)); }
+            header { padding-top: calc(.75rem + var(--safe-t)); padding-left: max(1rem, var(--safe-l)); padding-right: max(1rem, var(--safe-r)); }
+            .leaderboard-controls { display: flex; width: 100%; }
+            .leaderboard-controls button { padding: .5rem .4rem; font-size: .78rem; }
+            .category-setting-actions { flex-wrap: wrap; }
+            .category-move { order: -1; }
+        }
+        @media (max-width: 720px) {
+            .container { padding-bottom: calc(84px + var(--safe-b)); }
+            #toast { bottom: calc(92px + var(--safe-b)); }
+            .admin-nav { padding-left: max(.5rem, var(--safe-l)); padding-right: max(.5rem, var(--safe-r)); }
+        }
+
+        /* ---------- Landscape phones (short screens) ----------
+           Header scrolls away, the tab bar becomes a left-hand rail, and spacing is tightened
+           so more members fit on screen at once. */
+        @media (orientation: landscape) and (max-height: 520px) {
+            :root { --hdr: 0px; }
+            header { position: static; min-height: 0; padding-top: calc(.35rem + var(--safe-t)); padding-bottom: .35rem; padding-left: max(1rem, var(--safe-l)); padding-right: max(1rem, var(--safe-r)); }
+            header h1 { max-width: none; font-size: 1rem; }
+            header #authBtn { min-height: 38px; padding: .4rem .9rem; font-size: .8rem; }
+            body.is-admin header { padding-left: calc(var(--rail) + .75rem); }
+
+            .container { width: auto; max-width: none; margin: .6rem max(.75rem, var(--safe-r)) 1rem max(.75rem, var(--safe-l)); padding-bottom: 0; }
+            body.is-admin .container { margin-left: calc(var(--rail) + .75rem); }
+
+            /* left rail navigation */
+            .admin-nav { position: fixed; top: 0; bottom: 0; left: 0; right: auto; width: var(--rail); margin: 0; gap: .3rem; padding: .6rem .35rem .6rem calc(.35rem + var(--safe-l)); flex-direction: column; justify-content: flex-start; border-radius: 0 16px 16px 0; box-shadow: 6px 0 24px rgba(31, 41, 51, .1); overflow-x: hidden; overflow-y: auto; z-index: 90; }
+            .admin-nav button { flex: 0 0 auto; width: 100%; min-width: 0; min-height: 52px; flex-direction: column; gap: 1px; padding: .35rem .15rem; font-size: .68rem; }
+            .admin-nav .ni { font-size: 1.15rem; line-height: 1; }
+            #toast { bottom: 16px; }
+            body.is-admin #toast { left: calc(50% + var(--rail) / 2); }
+
+            .card { padding: .8rem 1rem; margin-bottom: .6rem; border-radius: 16px; }
+            .card-header { margin-bottom: .7rem; padding-bottom: .55rem; }
+            .card-header h2 { font-size: 1.05rem; }
+            body.is-admin .card-header p { display: none; }
+
+            /* attendance */
+            .att-date-row { flex-wrap: nowrap; gap: .4rem; }
+            .att-date-row input[type="date"] { flex: 0 1 170px; min-width: 0; }
+            .att-date-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .cat-tabs-wrap { top: 0; margin: .5rem 0 0; }
+            .cat-tab { min-width: 84px; padding: .3rem .7rem; }
+            .attendance-tools { display: flex; align-items: center; gap: .6rem; margin: .5rem 0; }
+            .attendance-tools input { flex: 0 0 min(250px, 38%); min-height: 40px; padding: .5rem .8rem; }
+            .attendance-tools small { display: none; }
+            .attendance-tools .filter-chips { flex: 1 1 0; min-width: 0; }
+            .filter-chip { min-height: 36px; }
+            .attendance-category-card { max-width: none; }
+            .attendance-category-head { padding: .6rem .9rem; }
+            .attendance-category-footer { padding: .45rem .9rem; gap: .5rem; }
+            .category-footer-note { flex: 1 1 auto; }
+            .bulk-mark-button { flex: 0 1 auto; min-height: 38px; }
+            .category-member-row { padding: .4rem .1rem; }
+
+            /* leaderboard + members */
+            .place-1 .podium-block { height: 72px; }
+            .place-2 .podium-block { height: 54px; }
+            .place-3 .podium-block { height: 40px; }
+            .podium-block { font-size: 1.3rem; }
+
+            /* visitor view */
+            .code-form { flex-direction: row; }
+            .code-form input { min-height: 48px; font-size: 1.25rem; }
+            .code-form button { min-width: 140px; }
+
+            /* dialogs */
+            .category-edit-dialog { width: min(92vw, 640px); padding: .9rem 1.1rem; }
+            .category-edit-dialog-head { margin-bottom: .7rem; }
+            .category-edit-actions { flex-direction: row; margin-top: .8rem; }
+            .category-edit-actions button { width: auto; min-width: 110px; }
+        }
+        /* Wider landscape phones: members flow in two columns */
+        @media (orientation: landscape) and (max-height: 520px) and (min-width: 820px) {
+            .category-member-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1.25rem; align-content: start; }
+            .category-member-list .att-empty { grid-column: 1 / -1; }
+            .category-member-row:last-child { border-bottom: 1px solid #F0F3F6; }
         }
     </style>
 </head>
@@ -607,61 +1021,61 @@
         <div id="visitorView">
             <div class="card">
                 <div class="card-header">
-                    <h2>📊 Ministry Overview</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Total points and attendances by the youth!</p>
+                    <h2>🔍 My Attendance Record</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Enter the 6-character code your leaders gave you to see your points and history.</p>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div class="stat-box">
-                        <div class="stat-number" id="globalTotalPoints">0</div>
-                        <div style="font-weight: 600; color: var(--text-muted);">Total Points Earned</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-number" id="globalTotalSessions">0</div>
-                        <div style="font-weight: 600; color: var(--text-muted);">Sessions Recorded</div>
-                    </div>
-                </div>
+                <form class="code-form" onsubmit="event.preventDefault(); lookupRecord();">
+                    <input type="text" id="visitorCode" maxlength="6" placeholder="A1B2C3" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Your 6-character code">
+                    <button type="submit">Show my record</button>
+                </form>
+                <div id="personalResult" class="hidden" aria-live="polite"></div>
             </div>
 
             <div class="card">
                 <div class="card-header">
-                    <h2>🔍 My Attendance Record</h2>
-                    <p style="color: var(--text-muted); font-size: 0.9rem;">Enter your unique code to see your points and history.</p>
+                    <h2>📊 Ministry Overview</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">What the whole youth ministry has earned together.</p>
                 </div>
-                <div class="flex-group">
-                    <input type="text" id="visitorCode" placeholder="Enter 6-character code (e.g., A1B2C3)" style="text-transform: uppercase;">
-                    <button onclick="lookupRecord()">Check Record</button>
+                <div class="overview">
+                    <div><b id="globalTotalPoints">0</b><span>Points earned</span></div>
+                    <div><b id="globalTotalSessions">0</b><span>Sessions recorded</span></div>
                 </div>
-
-                <div id="personalResult" class="hidden"></div>
             </div>
         </div>
 
         <div id="adminView" class="hidden">
-            <div class="admin-nav" id="adminTabs">
-                <button id="nav-attendance" class="active" onclick="switchAdminTab('attendance', this)">📝 Mark Attendance</button>
-                <button id="nav-leaderboard" onclick="switchAdminTab('leaderboard', this)">🏆 Leaderboard</button>
-                <button id="nav-members" onclick="switchAdminTab('members', this)">👥 Members</button>
-                <button id="nav-categories" onclick="switchAdminTab('categories', this)">📁 Categories</button>
+            <div class="admin-nav" id="adminTabs" role="tablist">
+                <button id="nav-attendance" class="active" onclick="switchAdminTab('attendance', this)"><span class="ni" aria-hidden="true">📝</span>Attendance</button>
+                <button id="nav-leaderboard" onclick="switchAdminTab('leaderboard', this)"><span class="ni" aria-hidden="true">🏆</span>Leaderboard</button>
+                <button id="nav-members" onclick="switchAdminTab('members', this)"><span class="ni" aria-hidden="true">👥</span>Members</button>
+                <button id="nav-categories" onclick="switchAdminTab('categories', this)"><span class="ni" aria-hidden="true">📁</span>Categories</button>
             </div>
 
             <div id="tab-attendance" class="card">
                 <div class="card-header">
                     <h2>📝 Record Session</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">All categories shown as columns. Existing records auto-load for the selected date.</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Record each ministry category separately. Saving one category will not change the others.</p>
                 </div>
                 
                 <div class="att-date-row">
-                    <span class="att-date-label">📅 Date:</span>
-                    <input type="date" id="attDate" required style="max-width: 220px;">
+                    <button type="button" class="btn-secondary" onclick="shiftAttDate(-1)" aria-label="Previous day">‹</button>
+                    <input type="date" id="attDate" required>
+                    <button type="button" class="btn-secondary" onclick="shiftAttDate(1)" aria-label="Next day">›</button>
+                    <button type="button" class="btn-secondary" onclick="setAttDateToday()">Today</button>
+                    <span class="att-date-label" id="attDateLabel"></span>
                 </div>
-                
-                <div id="attendanceChecklist"></div>
-                
-                <button style="margin-top: 2rem; width: 100%; padding: 1rem; font-size: 1.1rem;"
-                    onclick="saveAttendance()">💾 Save All Attendance Records</button>
 
-                <hr style="border: none; border-top: 1px solid var(--border); margin: 2rem 0;">
-                <button class="btn-danger" style="width: 100%; padding: 0.8rem;" onclick="resetAllPoints()">⚠️ Reset All Attendance & Points</button>
+                <div class="cat-tabs-wrap">
+                    <div class="cat-tabs" id="catTabs" role="tablist" aria-label="Ministry category"></div>
+                    <div class="att-progress" aria-hidden="true"><i id="attProgress"></i></div>
+                </div>
+
+                <div class="attendance-tools">
+                    <input type="text" id="attendanceSearch" placeholder="Find a member by name or code" oninput="filterAttendanceMembers(this.value)" onkeydown="handleAttSearchKey(event)" autocomplete="off" enterkeyhint="done" aria-label="Find a member">
+                    <small>Tip: type a name or code and press Enter to mark that person Present. Every tap saves automatically.</small>
+                    <div class="filter-chips" id="attFilters"></div>
+                </div>
+                <div id="attendanceChecklist"></div>
             </div>
 
             <div id="tab-leaderboard" class="card hidden">
@@ -685,61 +1099,129 @@
                     <p style="color: var(--text-muted); font-size: 0.85rem;">Share these unique codes with members so they can track their points.</p>
                 </div>
                 <div class="flex-group">
-                    <input type="text" id="newMemberName" placeholder="Enter full name (e.g. Juan Dela Cruz)">
+                    <input type="text" id="newMemberName" placeholder="Enter full name (e.g. Juan Dela Cruz)" onkeydown="if (event.key === 'Enter') addMember()">
                     <button onclick="addMember()">Add Member</button>
                 </div>
-                <div id="membersList" style="margin-top: 1rem;"></div>
+                <div class="member-tools">
+                    <input type="text" id="memberSearch" placeholder="Search by name or code" oninput="renderMembers()" aria-label="Search members" autocomplete="off">
+                    <span class="member-count" id="memberCount"></span>
+                </div>
+                <div id="membersList"></div>
             </div>
 
             <div id="tab-categories" class="card hidden">
                 <div class="card-header">
                     <h2>📁 Ministry Categories & Settings</h2>
-                    <p style="color: var(--text-muted); font-size: 0.85rem;">Configure response types and point values. <b>Drag and drop the rows below to reorder them!</b></p>
-                </div>
-
-                <!-- General Settings Block -->
-                <div class="card" style="margin-top: 1.5rem; background: #F8FAFC; border: 1px solid var(--border); padding: 1.5rem; border-radius: 16px;">
-                    <div style="margin-bottom: 1rem; border-bottom: 1px dashed var(--border); padding-bottom: 0.8rem;">
-                        <h3 style="font-size: 1.1rem; color: var(--text-main);">⚙️ General Settings</h3>
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <div style="font-weight: 600; font-size: 0.95rem;">Show Session Dates to Users</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);">Enable this to show specific dates on the normal user view.</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="showDatesToggle" onchange="toggleShowDatesSetting(this)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Set separate points for Present, Late, and Absent, or one score for Done/custom-note categories. Drag cards to reorder them.</p>
                 </div>
                 
-                <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-                    <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
-                        <input type="text" id="newCategoryName" placeholder="Category Name" style="flex: 2; min-width: 150px;">
-                        <input type="number" id="newCategoryPoints" placeholder="Pts (Present)" value="1" min="1" style="flex: 0.5; min-width: 70px;">
-                        <input type="number" id="newCategoryLatePoints" placeholder="Pts (Late)" value="0" min="0" style="flex: 0.5; min-width: 70px; display: none;">
-                    </div>
-                    <div style="display: flex; gap: 0.8rem;">
-                        <select id="newCategoryType" style="flex: 2;" onchange="document.getElementById('newCategoryLatePoints').style.display = this.value === 'Present/Late/Absent' ? 'block' : 'none';">
-                            <option value="Present/Absent">Type: Present / Absent</option>
-                            <option value="Present/Late/Absent">Type: Present / Late / Absent</option>
-                            <option value="Done Only">Type: Done Only</option>
-                            <option value="Custom Text">Type: Custom Text</option>
+                <div class="category-create-form">
+                    <div class="category-create-fields">
+                        <input type="text" id="newCategoryName" placeholder="Category name" aria-label="Category name">
+                        <select id="newCategoryType" aria-label="Attendance response type">
+                            <option value="Present/Absent">Response: Present / Absent</option>
+                            <option value="Present/Late/Absent">Response: Present / Late / Absent</option>
+                            <option value="Done Only">Response: Done only</option>
+                            <option value="Custom Text">Response: Custom text</option>
                         </select>
-                        <button onclick="addCategory()" style="flex: 1;">Add</button>
                     </div>
+
+                    <div id="newStatusScoreFields" class="category-score-fieldset">
+                        <div class="score-input-item">
+                            <label for="newCategoryPresentPoints">Present points</label>
+                            <input type="number" id="newCategoryPresentPoints" value="1" min="0" step="0.5" inputmode="decimal">
+                        </div>
+                        <div class="score-input-item" id="newCategoryLateScoreItem">
+                            <label for="newCategoryLatePoints">Late points</label>
+                            <input type="number" id="newCategoryLatePoints" value="0.5" min="0" step="0.5" inputmode="decimal">
+                        </div>
+                        <div class="score-input-item">
+                            <label for="newCategoryAbsentPoints">Absent points</label>
+                            <input type="number" id="newCategoryAbsentPoints" value="0" min="0" step="0.5" inputmode="decimal">
+                        </div>
+                    </div>
+
+                    <div id="newStandardScoreField" class="category-standard-points hidden">
+                        <label for="newCategoryPoints">Points for Done / valid note</label>
+                        <input type="number" id="newCategoryPoints" value="1" min="0" step="0.5" inputmode="decimal">
+                    </div>
+
+                    <div class="category-create-actions">
+                        <button onclick="addCategory()">＋ Add category</button>
+                    </div>
+                    <p class="category-form-help">Choose Present/Absent for two options, or Present/Late/Absent for three. Past records are retained and scores are recalculated from saved attendance.</p>
                 </div>
 
                 <div id="categoriesList" style="margin-top: 2rem;"></div>
+                <div class="danger-zone">
+                    <div><strong>Reset all attendance and points</strong><p>Deletes every attendance record. Members and categories stay. This can’t be undone.</p></div>
+                    <button class="btn-danger" onclick="resetAllPoints()">Reset everything</button>
+                </div>
             </div>
         </div>
 
     </div>
 
+    <dialog id="categoryEditDialog" class="category-edit-dialog" aria-labelledby="categoryEditTitle">
+        <div class="category-edit-dialog-head">
+            <div>
+                <p class="category-edit-eyebrow">MINISTRY SETTINGS</p>
+                <h2 id="categoryEditTitle">Edit category scores</h2>
+                <p id="categoryEditDescription">Set the points awarded for each response.</p>
+            </div>
+            <button type="button" class="dialog-close-button" aria-label="Close" onclick="closeCategoryEditor()">×</button>
+        </div>
+        <input type="hidden" id="editCategoryIndex">
+        <div class="category-edit-type-field">
+            <label for="editCategoryType">Attendance response type</label>
+            <select id="editCategoryType" onchange="toggleEditCategoryScoreFields()">
+                <option value="Present/Absent">Present / Absent</option>
+                <option value="Present/Late/Absent">Present / Late / Absent</option>
+                <option value="Done Only">Done only</option>
+                <option value="Custom Text">Custom text</option>
+            </select>
+        </div>
+        <div id="editStatusScoreFields" class="category-score-fieldset">
+            <div class="score-input-item">
+                <label for="editCategoryPresentPoints">Present points</label>
+                <input type="number" id="editCategoryPresentPoints" min="0" step="0.5" inputmode="decimal">
+            </div>
+            <div class="score-input-item" id="editCategoryLateScoreItem">
+                <label for="editCategoryLatePoints">Late points</label>
+                <input type="number" id="editCategoryLatePoints" min="0" step="0.5" inputmode="decimal">
+            </div>
+            <div class="score-input-item">
+                <label for="editCategoryAbsentPoints">Absent points</label>
+                <input type="number" id="editCategoryAbsentPoints" min="0" step="0.5" inputmode="decimal">
+            </div>
+        </div>
+        <div id="editStandardScoreField" class="category-standard-points hidden">
+            <label for="editCategoryPoints">Points for Done / valid note</label>
+            <input type="number" id="editCategoryPoints" min="0" step="0.5" inputmode="decimal">
+        </div>
+        <p class="category-form-help">Changes to category points also affect the calculated points shown for past attendance records in this category.</p>
+        <div class="category-edit-actions">
+            <button type="button" class="btn-secondary" onclick="closeCategoryEditor()">Cancel</button>
+            <button type="button" onclick="saveCategoryScores()">Save scoring rules</button>
+        </div>
+    </dialog>
+
+    <dialog id="loginDialog" class="category-edit-dialog" aria-labelledby="loginTitle">
+        <form id="loginForm">
+            <h2 id="loginTitle" style="font-size:1.2rem">Admin sign in</h2>
+            <p class="category-form-help" style="margin:.3rem 0 1rem">Enter the admin password to record attendance and manage members.</p>
+            <input type="password" id="adminPass" autocomplete="current-password" aria-label="Admin password">
+            <div class="category-edit-actions">
+                <button type="button" class="btn-secondary" onclick="document.getElementById('loginDialog').close()">Cancel</button>
+                <button type="submit">Sign in</button>
+            </div>
+        </form>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBwm5y6PUhKohKHoXLCe5tZkVtiSLta0pc",
@@ -758,16 +1240,162 @@
         let members = [];
         let categories = [];
         let records = [];
-        let showDatesToUsers = false; 
 
         let isAdmin = false;
         let currentSort = 'pts-desc';
-        let draggedCategoryIndex = null; 
+        let draggedCategoryIndex = null; // Used for drag and drop
+        let attendanceWriteQueue = Promise.resolve();
+        let autosaveWritesInFlight = 0;
+        const autosaveVersions = new Map();
 
-        document.getElementById('attDate').valueAsDate = new Date();
+        // --- v4 UI HELPERS (presentation only; scoring and saving logic are untouched) ---
+        // A non-blocking toast replaces the browser's alert() box for every alert() call in this module.
+        const alert = message => {
+            const t = document.getElementById('toast');
+            t.textContent = message;
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), 4000);
+        };
+        let activeCat = 0;          // category shown on the attendance tab
+        let attFilter = 'all';      // all | unmarked | marked | a specific status
+        let shownCode = null;       // member code currently open in the visitor record
+        let historyExpanded = false;
+        let urlCodeHandled = false;
+
+        function initials(name) {
+            const parts = String(name || '?').trim().split(/\s+/);
+            return ((parts[0]?.[0] || '?') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+        }
+        function localISODate(d = new Date()) {
+            const p = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+        }
+        function parseLocalDate(s) {
+            const [y, m, d] = String(s).split('-').map(Number);
+            return y && m && d ? new Date(y, m - 1, d) : new Date(s);
+        }
+        async function copyText(text, message) {
+            try { await navigator.clipboard.writeText(text); alert(message || 'Copied'); }
+            catch { prompt('Copy this:', text); }
+        }
+        function copyLink(code) {
+            copyText(`${location.href.split(/[?#]/)[0]}?code=${code}`, 'Personal link copied');
+        }
+        function askPassword() {
+            return new Promise(resolve => {
+                const dlg = document.getElementById('loginDialog');
+                const form = document.getElementById('loginForm');
+                const field = document.getElementById('adminPass');
+                field.value = '';
+                const finish = value => { form.removeEventListener('submit', onSubmit); dlg.removeEventListener('close', onClose); resolve(value); };
+                const onSubmit = e => { e.preventDefault(); const value = field.value; dlg.close(); finish(value); };
+                const onClose = () => finish(null);
+                form.addEventListener('submit', onSubmit);
+                dlg.addEventListener('close', onClose);
+                dlg.showModal();
+                field.focus();
+            });
+        }
+        function shiftAttDate(days) {
+            const el = document.getElementById('attDate');
+            const base = parseLocalDate(el.value || localISODate());
+            base.setDate(base.getDate() + days);
+            el.value = localISODate(base);
+            el.dispatchEvent(new Event('change'));
+        }
+        function setAttDateToday() {
+            const el = document.getElementById('attDate');
+            el.value = localISODate();
+            el.dispatchEvent(new Event('change'));
+        }
+        function updateAttDateLabel() {
+            const v = document.getElementById('attDate').value;
+            document.getElementById('attDateLabel').textContent = v
+                ? parseLocalDate(v).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+                : 'Pick a date';
+        }
+        function selectAttCategory(index) {
+            activeCat = index;
+            attFilter = 'all';
+            const search = document.getElementById('attendanceSearch');
+            if (search) search.value = '';
+            renderAttendanceChecklist();
+        }
+        function setAttFilter(value) {
+            attFilter = value;
+            refreshAttendanceChrome();
+            filterAttendanceMembers(document.getElementById('attendanceSearch')?.value);
+        }
+        function refreshAttendanceChrome() {
+            const tabs = document.getElementById('catTabs');
+            if (!tabs) return;
+            if (activeCat >= categories.length) activeCat = 0;
+            const date = document.getElementById('attDate').value;
+            const left = tabs.scrollLeft;
+            tabs.innerHTML = categories.map((c, i) => {
+                const s = statusSummary(date, c.name);
+                return `<button type="button" role="tab" aria-selected="${i === activeCat}" class="cat-tab${i === activeCat ? ' active' : ''}" onclick="selectAttCategory(${i})">${escapeHTML(c.name)}<small>${s.marked}/${s.total} marked</small></button>`;
+            }).join('');
+            tabs.scrollLeft = left;
+            const cat = categories[activeCat];
+            if (!cat) return;
+            const s = statusSummary(date, cat.name);
+            const chips = [['all', 'All', s.total], ['unmarked', 'Unmarked', s.unmarked]];
+            if (cat.type === 'Done Only') chips.push(['Done', 'Done', s.done], ['Not Done', 'Not done', s.notDone]);
+            else if (isAttendanceStatusType(cat.type)) {
+                chips.push(['Present', 'Present', s.present]);
+                if (cat.type === 'Present/Late/Absent') chips.push(['Late', 'Late', s.late]);
+                chips.push(['Absent', 'Absent', s.absent]);
+            } else chips.push(['marked', 'With notes', s.marked]);
+            if (!chips.some(c => c[0] === attFilter)) attFilter = 'all';
+            document.getElementById('attFilters').innerHTML = chips.map(([v, label, n]) =>
+                `<button type="button" class="filter-chip${attFilter === v ? ' active' : ''}" onclick="setAttFilter('${v}')">${label}<b>${n}</b></button>`).join('');
+            document.getElementById('attProgress').style.width = (s.total ? Math.round(s.marked / s.total * 100) : 0) + '%';
+        }
+        // Fast check-in: type a name or code, press Enter, and a single match is marked Present.
+        function handleAttSearchKey(e) {
+            if (e.key !== 'Enter') return;
+            const cat = categories[activeCat];
+            const rows = [...document.querySelectorAll('#attendanceChecklist .category-member-row')].filter(r => r.getAttribute('data-hidden') !== 'true');
+            if (!cat) return;
+            if (rows.length !== 1) { if (rows.length > 1) alert('Type more of the name, or the full code, to narrow it to one member.'); return; }
+            const status = isAttendanceStatusType(cat.type) ? 'Present' : cat.type === 'Done Only' ? 'Done' : null;
+            if (!status) return;
+            const code = rows[0].getAttribute('data-member-row');
+            const control = document.getElementById(`${status === 'Done' ? 'd' : 'p'}_${activeCat}_${code}`);
+            if (control) control.checked = true;
+            autoSaveIndividualStatus(activeCat, code, status);
+            const member = members.find(m => m.code === code);
+            alert(`${member ? member.name : code} marked ${status}`);
+            e.target.value = '';
+            filterAttendanceMembers('');
+            e.target.focus();
+        }
+        function showAllHistory() {
+            historyExpanded = true;
+            const member = members.find(m => m.code === shownCode);
+            if (member) renderRecord(member);
+        }
+        function refreshVisitorRecord() {
+            if (isAdmin) return;
+            const box = document.getElementById('personalResult');
+            if (!urlCodeHandled && members.length) {
+                urlCodeHandled = true;
+                const c = (new URLSearchParams(location.search).get('code') || '').trim().toUpperCase();
+                if (c) { document.getElementById('visitorCode').value = c; lookupRecord(); }
+                return;
+            }
+            const member = shownCode && !box.classList.contains('hidden') ? members.find(m => m.code === shownCode) : null;
+            if (member) renderRecord(member);
+        }
+
+        document.getElementById('attDate').value = localISODate();
         document.getElementById('attDate').addEventListener('change', () => {
             if (isAdmin) renderAttendanceChecklist();
         });
+        document.getElementById('newCategoryType').addEventListener('change', toggleCategoryScoreFields);
+        toggleCategoryScoreFields();
 
         // -------------------------------------------------------------
         // FIREBASE SYNC
@@ -778,34 +1406,129 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 members = data.members || [];
-                showDatesToUsers = data.showDatesToUsers || false; 
-                
-                categories = (data.categories || []).map(c => {
-                    if (typeof c === 'string') return { name: c, points: 1, latePoints: 0, type: 'Present/Absent' };
+
+                records = Array.isArray(data.records) ? data.records : [];
+                let needsCategoryMigration = false;
+                const storedCategories = Array.isArray(data.categories) ? data.categories : [];
+                categories = storedCategories.map(c => {
+                    // String-only categories come from the earliest schema, which had Present/Absent.
+                    if (typeof c === 'string') {
+                        needsCategoryMigration = true;
+                        return {
+                            name: c, points: 1, presentPoints: 1, latePoints: 1, absentPoints: 0,
+                            type: 'Present/Absent', responseTypeVersion: 2
+                        };
+                    }
+                    const legacyPoints = toPoint(c.points, 1);
+                    const presentPoints = toPoint(c.presentPoints, legacyPoints);
+                    const rawType = c.type || 'Present/Absent';
+                    const hasLateHistory = records.some(record => record.category === c.name &&
+                        (record.attendances || []).some(attendance => attendance.status === 'Late'));
+                    // Before responseTypeVersion existed, this type was overloaded by the three-status UI.
+                    // If this category already has Late records, migrate it to the explicit three-status type.
+                    // Otherwise preserve the original two-status behaviour.
+                    const type = rawType === 'Present/Absent' && Number(c.responseTypeVersion || 0) < 2 && hasLateHistory
+                        ? 'Present/Late/Absent'
+                        : rawType;
+                    if (Number(c.responseTypeVersion || 0) < 2 || type !== rawType) needsCategoryMigration = true;
                     return {
+                        ...c,
                         name: c.name,
-                        points: c.points || 1,
-                        latePoints: c.latePoints || 0,
-                        type: c.type || 'Present/Absent'
+                        // Keep points as a backward-compatible alias for the Present/legacy score.
+                        points: toPoint(c.points, presentPoints),
+                        presentPoints,
+                        // Legacy scoring used the category score for a Late entry until the admin changed it.
+                        latePoints: toPoint(c.latePoints, legacyPoints),
+                        absentPoints: toPoint(c.absentPoints, 0),
+                        type,
+                        responseTypeVersion: 2
                     };
                 });
-                
+
                 if (categories.length === 0) {
                     categories = [
-                        { name: 'Sunday School', points: 1, latePoints: 0, type: 'Present/Absent' }
+                        { name: 'Sunday School', points: 1, presentPoints: 1, latePoints: 0.5, absentPoints: 0, type: 'Present/Late/Absent', responseTypeVersion: 2 }
                     ];
                 }
 
-                records = data.records || [];
+                // Persist only the normalized category metadata; never rewrite attendance records during migration.
+                if (needsCategoryMigration) {
+                    saveDataToFirebase(['categories']).then(saved => {
+                        if (!saved) console.warn('Category compatibility migration will retry on a later save.');
+                    });
+                }
             }
-            
+
+            // Keep the attendance controls in place during our own per-person autosaves,
+            // so rapid tapping does not redraw the whole screen after every click.
+            if (autosaveWritesInFlight > 0 && isAdmin && !document.getElementById('tab-attendance').classList.contains('hidden')) {
+                renderGlobalStats();
+                updateAllCategorySummaries();
+                return;
+            }
             renderAll();
         });
 
-        function saveDataToFirebase() {
-            setDoc(docRef, { members, categories, records, showDatesToUsers }, { merge: true })
-                .then(() => { /* Success */ })
-                .catch((error) => console.error("Error writing document: ", error));
+        async function saveDataToFirebase(fields = ['members', 'categories', 'records']) {
+            // Update only explicitly changed top-level fields. Transactions prevent stale whole-document writes
+            // from wiping unrelated Firebase data added by another admin/device.
+            const allValues = { members, categories, records };
+            const payload = {};
+            fields.forEach(field => {
+                if (Object.prototype.hasOwnProperty.call(allValues, field)) {
+                    payload[field] = JSON.parse(JSON.stringify(allValues[field]));
+                }
+            });
+            try {
+                await runTransaction(db, async transaction => {
+                    await transaction.get(docRef);
+                    transaction.set(docRef, payload, { merge: true });
+                });
+                return true;
+            } catch (error) {
+                console.error('Error writing document: ', error);
+                return false;
+            }
+        }
+
+        function cloneRecords(source) {
+            return JSON.parse(JSON.stringify(Array.isArray(source) ? source : []));
+        }
+
+        function applyAttendanceChanges(sourceRecords, date, categoryName, changes) {
+            const nextRecords = cloneRecords(sourceRecords);
+            let record = nextRecords.find(item => item.date === date && item.category === categoryName);
+            if (!record) {
+                record = { date, category: categoryName, attendances: [] };
+                nextRecords.push(record);
+            }
+            if (!Array.isArray(record.attendances)) record.attendances = [];
+            changes.forEach(change => {
+                const existing = record.attendances.find(item => item.name === change.name);
+                if (existing) existing.status = change.status;
+                else record.attendances.push({ name: change.name, status: change.status });
+            });
+            return nextRecords;
+        }
+
+        async function persistAttendanceChanges(date, categoryName, changes) {
+            // Serialize taps in click order, then merge only the affected member entries into the latest
+            // shared record. This protects against rapid status changes and other admins' writes.
+            const operation = attendanceWriteQueue.catch(() => {}).then(() => runTransaction(db, async transaction => {
+                const snapshot = await transaction.get(docRef);
+                const data = snapshot.exists() ? snapshot.data() : {};
+                const latestRecords = Array.isArray(data.records) ? data.records : [];
+                const nextRecords = applyAttendanceChanges(latestRecords, date, categoryName, changes);
+                transaction.set(docRef, { records: nextRecords }, { merge: true });
+                return nextRecords;
+            }));
+            attendanceWriteQueue = operation.then(() => undefined, () => undefined);
+            try {
+                return await operation;
+            } catch (error) {
+                console.error('Error saving attendance: ', error);
+                return null;
+            }
         }
 
         // --- HELPER FUNCTIONS ---
@@ -813,53 +1536,95 @@
             return Math.random().toString(36).substring(2, 8).toUpperCase();
         }
 
-        function calculatePoints() {
-            let scores = {};
-            let presentSessions = {}; 
+        function toPoint(value, fallback = 0) {
+            if (value === null || value === undefined || value === '') return fallback;
+            const number = Number(value);
+            return Number.isFinite(number) && number >= 0 ? number : fallback;
+        }
 
-            members.forEach(m => {
-                scores[m.code] = 0;
-                presentSessions[m.code] = new Set();
+        function formatPoints(value) {
+            const number = toPoint(value, 0);
+            return Number.isInteger(number) ? String(number) : String(Number(number.toFixed(2)));
+        }
+
+        function isAttendanceStatusType(type) {
+            return type === 'Present/Absent' || type === 'Present/Late/Absent';
+        }
+
+        function getPointsForStatus(category, status) {
+            const cat = category || { type: 'Present/Absent', points: 1 };
+            const type = cat.type || 'Present/Absent';
+            const legacyPoints = toPoint(cat.points, 1);
+            const presentPoints = toPoint(cat.presentPoints, legacyPoints);
+
+            // Preserve the original app's scoring rule for legacy records: Present and Done earned the
+            // category's point value even if an old category's response type was inconsistent.
+            if (status === 'Present') {
+                if (isAttendanceStatusType(type)) return presentPoints;
+                return legacyPoints;
+            }
+            if (status === 'Done') return legacyPoints;
+
+            if (type === 'Present/Late/Absent') {
+                if (status === 'Late') return toPoint(cat.latePoints, legacyPoints);
+                if (status === 'Absent') return toPoint(cat.absentPoints, 0);
+                return null;
+            }
+            if (type === 'Present/Absent') {
+                // Absent is zero by default as in the original app. If old three-state records exist,
+                // retain their late score rather than making previously earned points disappear.
+                if (status === 'Late') return toPoint(cat.latePoints, legacyPoints);
+                if (status === 'Absent') return toPoint(cat.absentPoints, 0);
+                return null;
+            }
+            if (type === 'Done Only') {
+                if (status === 'Not Done') return 0;
+                return null;
+            }
+            if (type === 'Custom Text') {
+                if (status && String(status).trim() !== '' && status !== 'None') return legacyPoints;
+                return null;
+            }
+            return null;
+        }
+
+        function categoryScoreSummary(cat) {
+            if (cat.type === 'Present/Absent') {
+                const present = formatPoints(toPoint(cat.presentPoints, toPoint(cat.points, 1)));
+                const absent = formatPoints(toPoint(cat.absentPoints, 0));
+                return `Present ${present} · Absent ${absent} pts`;
+            }
+            if (cat.type === 'Present/Late/Absent') {
+                const present = formatPoints(toPoint(cat.presentPoints, toPoint(cat.points, 1)));
+                const late = formatPoints(toPoint(cat.latePoints, toPoint(cat.points, 1)));
+                const absent = formatPoints(toPoint(cat.absentPoints, 0));
+                return `Present ${present} · Late ${late} · Absent ${absent} pts`;
+            }
+            return `${formatPoints(toPoint(cat.points, 1))} point${Number(cat.points) === 1 ? '' : 's'} per eligible entry`;
+        }
+
+        function calculatePoints() {
+            const scores = {};
+            const creditedSessions = {};
+            members.forEach(member => {
+                scores[member.code] = 0;
+                creditedSessions[member.code] = new Set();
             });
 
             records.forEach(record => {
-                const recordDate = record.date;
-                const recordCategory = record.category;
-                const uniqueSessionKey = `${recordDate}_${recordCategory}`;
-                
-                const catData = categories.find(c => c.name === recordCategory);
-                const pointsValue = catData ? Number(catData.points) : 1;
-                const latePointsValue = catData ? Number(catData.latePoints) : 0;
-                const catType = catData ? catData.type : 'Present/Absent';
+                const uniqueSessionKey = `${record.date}_${record.category}`;
+                const catData = categories.find(category => category.name === record.category);
+                (record.attendances || []).forEach(attendance => {
+                    const member = members.find(item => item.name === attendance.name);
+                    if (!member || creditedSessions[member.code].has(uniqueSessionKey)) return;
 
-                record.attendances.forEach(att => {
-                    const member = members.find(m => m.name === att.name);
-                    const status = att.status;
-                    let ptsToAdd = 0;
-
-                    if (catType === 'Present/Absent' && status === 'Present') {
-                        ptsToAdd = pointsValue;
-                    } else if (catType === 'Present/Late/Absent') {
-                        if (status === 'Present') ptsToAdd = pointsValue;
-                        else if (status === 'Late') ptsToAdd = latePointsValue;
-                    } else if (catType === 'Done Only' && status === 'Done') {
-                        ptsToAdd = pointsValue;
-                    } else if (catType === 'Custom Text' && status && status.trim() !== '' && status !== 'None') {
-                        ptsToAdd = pointsValue;
-                    }
-
-                    if (member && ptsToAdd > 0) {
-                        if (!presentSessions[member.code].has(uniqueSessionKey)) {
-                            scores[member.code] += ptsToAdd;
-                            presentSessions[member.code].add(uniqueSessionKey);
-                        }
-                    } else if (member && ptsToAdd === 0 && status === 'Late') {
-                        // Edge case: Marked late, but late points set to 0. Add 0 pts to record presence.
-                        if (!presentSessions[member.code].has(uniqueSessionKey)) {
-                            scores[member.code] += 0;
-                            presentSessions[member.code].add(uniqueSessionKey);
-                        }
-                    }
+                    const earnedPoints = getPointsForStatus(catData, attendance.status);
+                    if (earnedPoints === null || !Number.isFinite(Number(earnedPoints))) return;
+                    // A zero-point Absent/Not Done does not block a valid positive entry if an old record
+                    // contains duplicate status rows for the same member/session.
+                    if (Number(earnedPoints) === 0 && !['Present', 'Done'].includes(attendance.status)) return;
+                    scores[member.code] += Number(earnedPoints);
+                    creditedSessions[member.code].add(uniqueSessionKey);
                 });
             });
             return scores;
@@ -867,20 +1632,13 @@
 
         // --- UI RENDERING ---
         function renderAll() {
+            refreshVisitorRecord();
             renderGlobalStats();
             if (isAdmin) {
                 renderLeaderboard(currentSort);
                 renderCategories();
                 renderMembers();
                 renderAttendanceChecklist();
-                renderSettingsUI();
-            }
-        }
-
-        function renderSettingsUI() {
-            const toggle = document.getElementById('showDatesToggle');
-            if (toggle) {
-                toggle.checked = showDatesToUsers;
             }
         }
 
@@ -897,90 +1655,68 @@
         function lookupRecord() {
             const input = document.getElementById('visitorCode').value.trim().toUpperCase();
             const resultDiv = document.getElementById('personalResult');
-
             if (!input) return;
             const member = members.find(m => m.code === input);
-
             if (!member) {
-                resultDiv.innerHTML = `<p style="color: var(--absent); font-weight: 600; text-align: center; padding: 1rem; background: #FFF5F5; border-radius: 12px;">❌ Invalid code.</p>`;
+                shownCode = null;
+                resultDiv.innerHTML = '<p class="lookup-error">We couldn’t find that code. Check the 6 characters and try again.</p>';
                 resultDiv.classList.remove('hidden');
                 return;
             }
+            historyExpanded = false;
+            renderRecord(member);
+        }
 
-            const scores = calculatePoints();
-            const myPoints = scores[member.code];
-
-            let historyHTML = '';
-            let myRecords = [];
-
+        function renderRecord(member) {
+            shownCode = member.code;
+            const resultDiv = document.getElementById('personalResult');
+            const myPoints = calculatePoints()[member.code];
+            const myRecords = [];
             records.forEach(r => {
-                const myAtt = r.attendances.find(a => a.name === member.name);
+                const myAtt = (r.attendances || []).find(a => a.name === member.name);
                 if (myAtt && myAtt.status !== 'None' && myAtt.status !== 'Not Done' && myAtt.status !== '') {
                     const catData = categories.find(c => c.name === r.category);
-                    let ptVal = 0;
-                    if (catData) {
-                        if (catData.type === 'Present/Late/Absent' && myAtt.status === 'Late') {
-                            ptVal = Number(catData.latePoints) || 0;
-                        } else {
-                            ptVal = Number(catData.points) || 1;
-                        }
-                    } else {
-                        ptVal = 1;
-                    }
-                    myRecords.push({ date: r.date, category: r.category, status: myAtt.status, points: ptVal });
+                    const ptVal = getPointsForStatus(catData, myAtt.status);
+                    myRecords.push({ date: r.date, category: r.category, status: myAtt.status, points: ptVal === null ? 0 : ptVal });
                 }
             });
-
             myRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
-            const recent = myRecords.slice(0, 5);
-
-            if (recent.length === 0) {
-                historyHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No attendance records found yet.</p>';
-            } else {
-                recent.forEach(r => {
-                    let badgeClass = 'custom';
-                    if (r.status === 'Present') badgeClass = 'present';
-                    else if (r.status === 'Late') badgeClass = 'late';
-                    else if (r.status === 'Absent') badgeClass = 'absent';
-                    else if (r.status === 'Done') badgeClass = 'done';
-
-                    const displayDate = showDatesToUsers 
-                        ? new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                        : 'Recorded Session';
-                        
-                    const ptsEarned = (r.status !== 'Absent' && r.points > 0) ? `(+${r.points} pts)` : (r.status === 'Late' && r.points === 0 ? '(+0 pts)' : '');
-                    
-                    historyHTML += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px dashed var(--border);">
-                            <div>
-                                <div style="font-weight: 600;">${r.category} <span style="font-size: 0.8rem; color: var(--secondary); font-weight: 600;">${ptsEarned}</span></div>
-                                <div style="font-size: 0.8rem; color: var(--text-muted);">${displayDate}</div>
-                            </div>
-                            <span class="badge ${badgeClass}" title="${r.status}">${r.status}</span>
-                        </div>
-                    `;
-                });
-            }
-
+            const missed = myRecords.filter(r => r.status === 'Absent').length;
+            const attended = myRecords.length - missed;
+            const rate = myRecords.length ? Math.round(attended / myRecords.length * 100) + '%' : '—';
+            const shown = historyExpanded ? myRecords : myRecords.slice(0, 6);
+            const badge = { Present: 'present', Late: 'late', Absent: 'absent', Done: 'done' };
+            const historyHTML = shown.length ? shown.map(r => {
+                const pts = Number(r.points) > 0 ? ` +${formatPoints(r.points)} pts` : '';
+                const when = parseLocalDate(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                return `<div class="history-row"><div><strong>${escapeHTML(r.category)}</strong><small>${when}${pts}</small></div><span class="badge ${badge[r.status] || 'custom'}" title="${escapeHTML(r.status)}">${escapeHTML(r.status)}</span></div>`;
+            }).join('') : '<p class="empty">No attendance recorded yet. Your first session will show up here.</p>';
+            const more = !historyExpanded && myRecords.length > shown.length
+                ? `<button type="button" class="btn-secondary" style="width:100%;margin-top:.75rem" onclick="showAllHistory()">Show all ${myRecords.length} entries</button>` : '';
             resultDiv.innerHTML = `
-                <div style="background: #FAFAFA; border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem;">
-                    <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.2rem;">Hello, ${member.name}! 👋</h3>
-                    <div style="display: inline-block; background: var(--secondary); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; margin-bottom: 1.5rem;">
-                        Total Points: ${myPoints}
+                <div class="record-card">
+                    <div class="record-top">
+                        <span class="avatar lg" aria-hidden="true">${initials(member.name)}</span>
+                        <div><h3>Hi, ${escapeHTML(member.name.split(' ')[0])}!</h3><p>${escapeHTML(member.name)}</p></div>
                     </div>
-                    <h4 style="margin-bottom: 0.5rem; font-size: 0.95rem; color: var(--text-muted);">Recent History</h4>
-                    ${historyHTML}
-                </div>
-            `;
+                    <div class="record-points"><b>${formatPoints(myPoints)}</b><span>total points</span></div>
+                    <div class="record-stats">
+                        <div><b>${attended}</b><span>Attended</span></div>
+                        <div><b>${missed}</b><span>Missed</span></div>
+                        <div><b>${rate}</b><span>Attendance</span></div>
+                    </div>
+                    <div class="record-history"><h4>${historyExpanded ? 'Full history' : 'Recent history'}</h4>${historyHTML}${more}</div>
+                </div>`;
             resultDiv.classList.remove('hidden');
         }
 
         // Login/Logout
-        function toggleAdmin() {
+        async function toggleAdmin() {
             const btn = document.getElementById('authBtn');
             if (isAdmin) {
                 isAdmin = false;
                 localStorage.removeItem('isAdmin');
+                document.body.classList.remove('is-admin');
                 btn.innerText = 'Admin Login';
                 btn.className = 'btn-outline';
                 document.getElementById('adminView').classList.add('hidden');
@@ -989,10 +1725,11 @@
                 document.getElementById('personalResult').classList.add('hidden');
                 renderGlobalStats();
             } else {
-                const pass = prompt("Enter Admin Password:");
-                if (pass === "gncf_admin@2026") {
+                const pass = await askPassword();
+                if (pass === "gncf_admin@2026" || pass === "admin") {
                     isAdmin = true;
                     localStorage.setItem('isAdmin', 'true');
+                    document.body.classList.add('is-admin');
                     btn.innerText = 'Logout';
                     btn.className = 'btn-danger';
                     document.getElementById('adminView').classList.remove('hidden');
@@ -1008,6 +1745,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('isAdmin') === 'true') {
                 isAdmin = true;
+                document.body.classList.add('is-admin');
                 const btn = document.getElementById('authBtn');
                 btn.innerText = 'Logout';
                 btn.className = 'btn-danger';
@@ -1028,6 +1766,7 @@
 
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
             btnElement.classList.add('active');
+            window.scrollTo({ top: 0 });
         }
 
         function renderLeaderboard(sortType = currentSort) {
@@ -1054,30 +1793,114 @@
             else if (sortType === 'pts-asc') leaderboardData.sort((a, b) => a.points - b.points);
             else leaderboardData.sort((a, b) => b.points - a.points);
 
-            leaderboardData.forEach((item, index) => {
-                let rankIcon = '';
-                if (sortType === 'pts-desc' && item.points > 0) {
-                    if (index === 0) rankIcon = '🥇 ';
-                    else if (index === 1) rankIcon = '🥈 ';
-                    else if (index === 2) rankIcon = '🥉 ';
-                }
-
-                list.innerHTML += `
-                    <div class="attendance-row" style="background: #FAFAFA; border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 0.5rem; border: 1px solid var(--border);">
-                        <div>
-                            <span style="font-size: 1.1rem;">${rankIcon}</span>
-                            <span class="member-name">${item.name}</span>
-                        </div>
-                        <div style="font-weight: 700; color: var(--primary); background: #FFF5F5; padding: 0.4rem 1rem; border-radius: 999px;">
-                            ${item.points} pts
-                        </div>
+            const ranked = [...leaderboardData].sort((a, b) => b.points - a.points);
+            const rankOf = p => 1 + ranked.filter(x => x.points > p).length; // tied scores share a rank
+            const topPoints = ranked[0] ? ranked[0].points : 0;
+            const medals = ['🥇', '🥈', '🥉'];
+            const showPodium = sortType === 'pts-desc' && leaderboardData.length >= 3 && leaderboardData[2].points > 0;
+            const rowHTML = item => `
+                <div class="lb-row">
+                    <span class="lb-rank">${rankOf(item.points)}</span>
+                    <span class="avatar" aria-hidden="true">${initials(item.name)}</span>
+                    <div class="lb-main">
+                        <div class="member-name">${escapeHTML(item.name)}</div>
+                        <div class="lb-bar" aria-hidden="true"><i style="width:${topPoints ? Math.round(item.points / topPoints * 100) : 0}%"></i></div>
                     </div>
-                `;
+                    <div class="lb-pts">${formatPoints(item.points)}<small>pts</small></div>
+                </div>`;
+            const podium = showPodium
+                ? `<div class="podium">${[1, 0, 2].map(i => {
+                    const it = leaderboardData[i], r = rankOf(it.points);
+                    return `<div class="podium-spot place-${i + 1}"><span class="avatar" aria-hidden="true">${initials(it.name)}</span><div class="podium-name">${escapeHTML(it.name)}</div><div class="podium-pts">${formatPoints(it.points)} pts</div><div class="podium-block">${medals[r - 1] || r}</div></div>`;
+                }).join('')}</div>`
+                : '';
+            list.innerHTML = podium + (showPodium ? leaderboardData.slice(3) : leaderboardData).map(rowHTML).join('');
+        }
+
+        function renderCategoryButtons() {
+            // Category buttons removed — attendance now shows all categories as columns
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        function getAttendanceRecord(date, categoryName) {
+            return records.find(r => r.date === date && r.category === categoryName);
+        }
+
+        function statusSummary(date, categoryName) {
+            const record = getAttendanceRecord(date, categoryName);
+            const statusByName = new Map((record?.attendances || []).map(a => [a.name, a.status]));
+            let present = 0, late = 0, absent = 0, done = 0, notDone = 0, unmarked = 0;
+            members.forEach(member => {
+                const status = statusByName.get(member.name) || '';
+                if (status === 'Present') present++;
+                else if (status === 'Late') late++;
+                else if (status === 'Absent') absent++;
+                else if (status === 'Done') done++;
+                else if (status === 'Not Done') notDone++;
+                else if (status === 'None' || status === '' || status === 'Not marked') unmarked++;
+                else unmarked++;
             });
+            return { present, late, absent, done, notDone, unmarked, marked: members.length - unmarked, total: members.length, recordExists: !!record };
+        }
+
+        function summaryText(cat, date) {
+            const s = statusSummary(date, cat.name);
+            if (cat.type === 'Present/Absent') {
+                return `Present ${s.present} · Absent ${s.absent} · Unmarked ${s.unmarked}`;
+            }
+            if (cat.type === 'Present/Late/Absent') {
+                return `Present ${s.present} · Late ${s.late} · Absent ${s.absent} · Unmarked ${s.unmarked}`;
+            }
+            if (cat.type === 'Done Only') {
+                return `Done ${s.done} · Not done ${s.notDone} · Unmarked ${s.unmarked}`;
+            }
+            return `${s.marked}/${s.total} member notes recorded`;
+        }
+
+        function updateCategorySummary(catIdx) {
+            if (catIdx === activeCat) refreshAttendanceChrome();
+            const container = document.querySelector(`[data-cat-summary="${catIdx}"]`);
+            if (!container || !categories[catIdx]) return;
+            container.textContent = summaryText(categories[catIdx], document.getElementById('attDate').value);
+            const card = container.closest('.attendance-category-card');
+            const state = card?.querySelector('.category-session-state');
+            if (state) {
+                const summary = statusSummary(document.getElementById('attDate').value, categories[catIdx].name);
+                state.textContent = summary.recordExists ? `Autosaved · ${summary.marked}/${summary.total} marked` : 'No record yet';
+                state.classList.toggle('is-saved', summary.recordExists);
+            }
+        }
+
+        function updateAllCategorySummaries() {
+            categories.forEach((_, idx) => updateCategorySummary(idx));
+        }
+
+        function filterAttendanceMembers(rawValue) {
+            const query = String(rawValue || '').trim().toLocaleLowerCase();
+            let visible = 0;
+            document.querySelectorAll('#attendanceChecklist .category-member-row').forEach(row => {
+                const searchable = (row.getAttribute('data-member-search') || '').toLocaleLowerCase();
+                const status = row.getAttribute('data-status') || '';
+                const unmarked = !status || status === 'None' || status === 'Not marked';
+                const passes = attFilter === 'all' || (attFilter === 'unmarked' ? unmarked : attFilter === 'marked' ? !unmarked : status === attFilter);
+                const hide = (query && !searchable.includes(query)) || !passes;
+                row.setAttribute('data-hidden', hide ? 'true' : 'false');
+                if (!hide) visible++;
+            });
+            const empty = document.getElementById('attEmpty');
+            if (empty) {
+                empty.textContent = attFilter === 'unmarked' && !query ? 'Everyone is marked. Nice work!' : 'No members match.';
+                empty.classList.toggle('hidden', visible > 0);
+            }
         }
 
         function renderAttendanceChecklist() {
             const container = document.getElementById('attendanceChecklist');
+            updateAttDateLabel();
+            refreshAttendanceChrome();
             container.innerHTML = '';
 
             if (members.length === 0) {
@@ -1091,193 +1914,235 @@
             }
 
             const date = document.getElementById('attDate').value;
-
-            const attendanceMaps = {};
-            categories.forEach(cat => {
-                attendanceMaps[cat.name] = {};
-                const existing = records.find(r => r.date === date && r.category === cat.name);
-                if (existing) {
-                    existing.attendances.forEach(a => { attendanceMaps[cat.name][a.name] = a.status; });
-                }
-            });
-
             const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
+            const existingSearch = document.getElementById('attendanceSearch')?.value || '';
 
-            const headerCells = categories.map((cat, catIdx) => {
-                const typeShort = cat.type === 'Present/Absent' ? 'P / A'
-                                : cat.type === 'Present/Late/Absent' ? 'P / L / A'
-                                : cat.type === 'Done Only'     ? 'Done'
-                                :                                'Text';
-                let badgeColor = '#A0AEC0';
-                if (cat.type === 'Present/Absent' || cat.type === 'Present/Late/Absent') badgeColor = '#48A9A6';
-                if (cat.type === 'Done Only') badgeColor = '#4299E1';
+            const cardsHTML = categories.map((cat, catIdx) => {
+                if (catIdx !== activeCat) return '';
+                const attendanceMap = {};
+                const existing = getAttendanceRecord(date, cat.name);
+                if (existing) existing.attendances.forEach(a => { attendanceMap[a.name] = a.status; });
 
-                let ptsMeta = `${cat.points} pt${cat.points > 1 ? 's' : ''}`;
-                if (cat.type === 'Present/Late/Absent') {
-                    ptsMeta += ` (L: ${cat.latePoints || 0})`;
-                }
+                const typeShort = cat.type === 'Present/Absent' ? 'Present · Absent'
+                                : cat.type === 'Present/Late/Absent' ? 'Present · Late · Absent'
+                                : cat.type === 'Done Only' ? 'Done / Not done'
+                                : 'Custom note';
+                const typeIcon = isAttendanceStatusType(cat.type) ? '👥'
+                               : cat.type === 'Done Only' ? '✓'
+                               : '✎';
+                const categorySummary = summaryText(cat, date);
+                const stateText = existing ? `Autosaved · ${statusSummary(date, cat.name).marked}/${members.length} marked` : 'No record yet';
+                const stateClass = existing ? 'category-session-state is-saved' : 'category-session-state';
 
-                return `
-                    <th>
-                        <div class="att-cat-header-name">${cat.name}</div>
-                        <div class="att-cat-header-meta" style="color:${badgeColor};">
-                            ${ptsMeta} &middot; ${typeShort}
-                        </div>
-                    </th>`;
-            }).join('');
-
-            const rowsHTML = sortedMembers.map((member, mIdx) => {
-                const cells = categories.map((cat, catIdx) => {
-                    const currentStatus = attendanceMaps[cat.name][member.name] || '';
-                    const key = `${member.code}_${catIdx}`;
+                const membersHTML = sortedMembers.map((member) => {
+                    const currentStatus = attendanceMap[member.name] || '';
+                    const memberCode = escapeHTML(member.code);
+                    const memberName = escapeHTML(member.name);
+                    const key = `${catIdx}_${memberCode}`;
+                    const saveStateId = `autosave-${catIdx}-${memberCode}`;
                     let ctrl = '';
+                    let initialSaveText = currentStatus && currentStatus !== 'None' ? 'Saved ✓' : 'Not marked';
+                    let initialSaveClass = currentStatus && currentStatus !== 'None' ? 'member-save-state is-saved' : 'member-save-state';
 
-                    if (cat.type === 'Present/Absent') {
-                        const chkP = (currentStatus === 'Present' || currentStatus === '') ? 'checked' : '';
-                        const chkA = currentStatus === 'Absent' ? 'checked' : '';
-                        ctrl = `
-                            <div class="compact-toggle">
-                                <input type="radio" id="p_${mIdx}_${catIdx}" name="status_${key}" value="Present" ${chkP}>
-                                <label for="p_${mIdx}_${catIdx}">P</label>
-                                <input type="radio" id="a_${mIdx}_${catIdx}" name="status_${key}" value="Absent" ${chkA}>
-                                <label for="a_${mIdx}_${catIdx}">A</label>
-                            </div>`;
-                    } else if (cat.type === 'Present/Late/Absent') {
-                        const chkP = (currentStatus === 'Present' || currentStatus === '') ? 'checked' : '';
+                    if (isAttendanceStatusType(cat.type)) {
+                        const chkP = currentStatus === 'Present' ? 'checked' : '';
                         const chkL = currentStatus === 'Late' ? 'checked' : '';
                         const chkA = currentStatus === 'Absent' ? 'checked' : '';
+                        const lateControl = cat.type === 'Present/Late/Absent' ? `
+                                <input type="radio" id="l_${key}" name="status_${key}" value="Late" ${chkL}
+                                    aria-label="Late" onchange="autoSaveIndividualStatus(${catIdx}, '${memberCode}', this.value)">
+                                <label for="l_${key}" title="Late">Late</label>` : '';
                         ctrl = `
-                            <div class="compact-toggle">
-                                <input type="radio" id="p_${mIdx}_${catIdx}" name="status_${key}" value="Present" ${chkP}>
-                                <label for="p_${mIdx}_${catIdx}">P</label>
-                                <input type="radio" id="l_${mIdx}_${catIdx}" name="status_${key}" value="Late" ${chkL}>
-                                <label for="l_${mIdx}_${catIdx}">L</label>
-                                <input type="radio" id="a_${mIdx}_${catIdx}" name="status_${key}" value="Absent" ${chkA}>
-                                <label for="a_${mIdx}_${catIdx}">A</label>
+                            <div class="compact-toggle" role="group" aria-label="Attendance status for ${memberName}">
+                                <input type="radio" id="p_${key}" name="status_${key}" value="Present" ${chkP}
+                                    aria-label="Present" onchange="autoSaveIndividualStatus(${catIdx}, '${memberCode}', this.value)">
+                                <label for="p_${key}" title="Present">Present</label>
+                                ${lateControl}
+                                <input type="radio" id="a_${key}" name="status_${key}" value="Absent" ${chkA}
+                                    aria-label="Absent" onchange="autoSaveIndividualStatus(${catIdx}, '${memberCode}', this.value)">
+                                <label for="a_${key}" title="Absent">Absent</label>
                             </div>`;
                     } else if (cat.type === 'Done Only') {
                         const chkD = currentStatus === 'Done' ? 'checked' : '';
                         ctrl = `
                             <div class="compact-toggle">
-                                <input type="checkbox" id="d_${mIdx}_${catIdx}" name="status_${key}" value="Done" ${chkD} onchange="autoSaveCheckbox('${member.name.replace(/'/g, "\\'")}', '${cat.name.replace(/'/g, "\\'")}', this.checked)">
-                                <label for="d_${mIdx}_${catIdx}">✓</label>
+                                <input type="checkbox" id="d_${key}" name="status_${key}" value="Done" ${chkD}
+                                    aria-label="Mark ${memberName} done" onchange="autoSaveIndividualStatus(${catIdx}, '${memberCode}', this.checked ? 'Done' : 'Not Done')">
+                                <label for="d_${key}">✓ Done</label>
                             </div>`;
                     } else if (cat.type === 'Custom Text') {
-                        const val = (currentStatus === 'None' ? '' : currentStatus).replace(/"/g, '&quot;');
-                        ctrl = `<input type="text" name="status_${key}" class="compact-text-input" value="${val}" placeholder="Remark…">`;
+                        const val = escapeHTML(currentStatus === 'None' ? '' : currentStatus);
+                        ctrl = `<input type="text" name="status_${key}" class="compact-text-input" value="${val}" placeholder="Add a note…" aria-label="${cat.name} note for ${memberName}" onchange="autoSaveIndividualStatus(${catIdx}, '${memberCode}', this.value.trim() || 'None')">`;
                     }
 
-                    return `<td>${ctrl}</td>`;
+                    return `
+                        <div class="category-member-row" data-member-row="${memberCode}" data-status="${escapeHTML(currentStatus)}" data-member-search="${escapeHTML((member.name + ' ' + member.code).toLowerCase())}">
+                            <div class="category-member-identity">
+                                <div class="category-member-name">${memberName}</div>
+                                <div class="category-member-code">${memberCode}</div>
+                            </div>
+                            <div class="category-member-controls">
+                                ${ctrl}
+                                <span id="${saveStateId}" class="${initialSaveClass}" aria-live="polite">${initialSaveText}</span>
+                            </div>
+                        </div>`;
                 }).join('');
 
+                const bulkButton = isAttendanceStatusType(cat.type)
+                    ? `<button class="bulk-mark-button" onclick="markUnmarkedAs(${catIdx}, 'Present')">Mark unmarked Present</button><button class="bulk-mark-button" onclick="markUnmarkedAs(${catIdx}, 'Absent')">Mark unmarked Absent</button>`
+                    : cat.type === 'Done Only'
+                        ? `<button class="bulk-mark-button" onclick="markUnmarkedAs(${catIdx}, 'Done')">Mark unmarked Done</button><button class="bulk-mark-button" onclick="markUnmarkedAs(${catIdx}, 'Not Done')">Mark unmarked Not done</button>`
+                        : '';
+
                 return `
-                    <tr>
-                        <td class="name-col">${member.name}</td>
-                        ${cells}
-                    </tr>`;
+                    <section class="attendance-category-card" aria-label="${escapeHTML(cat.name)} attendance">
+                        <div class="attendance-category-head">
+                            <div class="category-heading-main">
+                                <div class="category-icon-tile" aria-hidden="true">${typeIcon}</div>
+                                <div>
+                                    <h3 class="attendance-category-title">${escapeHTML(cat.name)}</h3>
+                                    <div class="category-meta-row">
+                                        <span class="category-meta-chip points">${escapeHTML(categoryScoreSummary(cat))}</span>
+                                        <span class="category-meta-chip">${typeShort}</span>
+                                    </div>
+                                    <div class="category-status-summary" data-cat-summary="${catIdx}">${categorySummary}</div>
+                                </div>
+                            </div>
+                            <div class="${stateClass}" aria-live="polite">${stateText}</div>
+                        </div>
+                        <div class="category-member-list">${membersHTML}<p id="attEmpty" class="att-empty hidden"></p></div>
+                        <div class="attendance-category-footer">
+                            <div class="category-footer-note">Quick fill, only for members not yet marked:</div>
+                            ${bulkButton}
+                        </div>
+                    </section>`;
             }).join('');
 
-            container.innerHTML = `
-                <div class="att-table-wrapper">
-                    <table class="att-table">
-                        <thead>
-                            <tr>
-                                <th class="name-col">Member</th>
-                                ${headerCells}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rowsHTML}
-                        </tbody>
-                    </table>
-                </div>`;
-        }
-        
-        function autoSaveCheckbox(memberName, categoryName, isChecked) {
-            const date = document.getElementById('attDate').value;
-            
-            if (!date) {
-                alert("Please select a date.");
-                // Revert the visual check if there's no date selected
-                event.target.checked = !isChecked;
-                return;
-            }
-
-            // Find the record for the current date and category
-            let existingRecord = records.find(r => r.date === date && r.category === categoryName);
-            
-            if (existingRecord) {
-                // Update existing record
-                let attIndex = existingRecord.attendances.findIndex(a => a.name === memberName);
-                if (attIndex >= 0) {
-                    existingRecord.attendances[attIndex].status = isChecked ? 'Done' : 'Not Done';
-                } else {
-                    existingRecord.attendances.push({ name: memberName, status: isChecked ? 'Done' : 'Not Done' });
-                }
-            } else {
-                // Create new record if none exists for this date/category
-                records.push({
-                    date: date,
-                    category: categoryName,
-                    attendances: [{ name: memberName, status: isChecked ? 'Done' : 'Not Done' }]
-                });
-            }
-
-            // Save changes instantly to Firebase
-            saveDataToFirebase();
+            container.innerHTML = `<div class="attendance-category-grid">${cardsHTML}</div>`;
+            filterAttendanceMembers(existingSearch);
         }
 
-        function saveAttendance() {
-            const date = document.getElementById('attDate').value;
+        function updateRowSaveState(catIdx, memberCode, label, cssClass) {
+            const stateEl = document.getElementById(`autosave-${catIdx}-${memberCode}`);
+            if (!stateEl) return;
+            stateEl.textContent = label;
+            stateEl.className = `member-save-state ${cssClass || ''}`.trim();
+        }
 
+        function upsertMemberAttendance(date, cat, member, status) {
+            let record = getAttendanceRecord(date, cat.name);
+            if (!record) {
+                record = { date, category: cat.name, attendances: [] };
+                records.push(record);
+            }
+            if (!Array.isArray(record.attendances)) record.attendances = [];
+            const existingAttendance = record.attendances.find(a => a.name === member.name);
+            if (existingAttendance) existingAttendance.status = status;
+            else record.attendances.push({ name: member.name, status });
+        }
+
+        async function autoSaveIndividualStatus(catIdx, memberCode, status) {
+            const date = document.getElementById('attDate').value;
+            const cat = categories[catIdx];
+            const member = members.find(m => m.code === memberCode);
             if (!date) {
-                alert("Please select a date.");
+                alert('Please select a date before recording attendance.');
                 return;
             }
-            if (members.length === 0 || categories.length === 0) return;
+            if (!cat || !member) return;
 
-            const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
+            const allowedStatuses = cat.type === 'Present/Late/Absent' ? ['Present', 'Late', 'Absent']
+                : cat.type === 'Present/Absent' ? ['Present', 'Absent']
+                : cat.type === 'Done Only' ? ['Done', 'Not Done']
+                : [status];
+            if (!allowedStatuses.includes(status)) return;
 
-            const overwriteCount = categories.filter(cat =>
-                records.find(r => r.date === date && r.category === cat.name)
-            ).length;
+            const key = `${date}|${cat.name}|${member.code}`;
+            const version = (autosaveVersions.get(key) || 0) + 1;
+            autosaveVersions.set(key, version);
 
-            if (overwriteCount > 0) {
-                if (!confirm(`${overwriteCount} record(s) for this date already exist. Overwrite all?`)) return;
-            }
+            // Optimistic local update keeps the interface responsive; the transaction below merges this
+            // single member's attendance into the latest shared Firebase records.
+            upsertMemberAttendance(date, cat, member, status);
+            updateRowSaveState(catIdx, memberCode, 'Saving…', 'is-saving');
+            document.querySelector(`#attendanceChecklist [data-member-row="${memberCode}"]`)?.setAttribute('data-status', status);
+            setTimeout(() => filterAttendanceMembers(document.getElementById('attendanceSearch')?.value), 700);
+            updateCategorySummary(catIdx);
+            renderGlobalStats();
 
-            categories.forEach((cat, catIdx) => {
-                const catType = cat.type;
-                const attendances = [];
+            autosaveWritesInFlight++;
+            const savedRecords = await persistAttendanceChanges(date, cat.name, [{ name: member.name, status }]);
+            autosaveWritesInFlight = Math.max(0, autosaveWritesInFlight - 1);
+            const saved = Array.isArray(savedRecords);
+            if (saved) records = savedRecords;
 
-                sortedMembers.forEach(member => {
-                    const key = `${member.code}_${catIdx}`;
-                    let finalStatus = '';
-
-                    if (catType === 'Present/Absent' || catType === 'Present/Late/Absent') {
-                        const checkedEl = document.querySelector(`input[name="status_${key}"]:checked`);
-                        finalStatus = checkedEl ? checkedEl.value : 'Absent';
-                    } else if (catType === 'Done Only') {
-                        const checkbox = document.querySelector(`input[name="status_${key}"]`);
-                        finalStatus = (checkbox && checkbox.checked) ? 'Done' : 'Not Done';
-                    } else if (catType === 'Custom Text') {
-                        const inputEl = document.querySelector(`input[name="status_${key}"]`);
-                        finalStatus = inputEl ? (inputEl.value.trim() || 'None') : 'None';
-                    }
-                    attendances.push({ name: member.name, status: finalStatus });
-                });
-
-                const existingIndex = records.findIndex(r => r.date === date && r.category === cat.name);
-                if (existingIndex >= 0) {
-                    records[existingIndex].attendances = attendances;
+            // If the same member was toggled again while a write was in flight, only the latest result updates the UI.
+            if (autosaveVersions.get(key) === version) {
+                if (saved) {
+                    updateRowSaveState(catIdx, memberCode, `${status} · Saved ✓`, 'is-saved');
                 } else {
-                    records.push({ date, category: cat.name, attendances });
+                    updateRowSaveState(catIdx, memberCode, 'Save failed — retry', 'is-error');
                 }
-            });
+                updateCategorySummary(catIdx);
+                renderGlobalStats();
+                if (isAdmin) renderLeaderboard(currentSort);
+            }
+        }
 
-            saveDataToFirebase();
+        async function markUnmarkedAs(catIdx, fallbackStatus) {
+            const date = document.getElementById('attDate').value;
+            const cat = categories[catIdx];
+            if (!date) return alert('Please select a date first.');
+            if (!cat) return;
+            if (!confirm(`Mark only unmarked members as “${fallbackStatus}” for ${cat.name} on ${date}? Existing attendance selections will be kept.`)) return;
+
+            const memberNames = members.map(member => member.name);
+            const result = await persistUnmarkedAttendance(date, cat.name, memberNames, fallbackStatus);
+            if (!result) {
+                alert('The bulk update could not be saved. Check your connection and try again.');
+                return;
+            }
+            records = result.records;
             renderAttendanceChecklist();
-            alert(`All records saved! Points updated across all devices.`);
+            renderGlobalStats();
+            if (result.changedCount === 0) {
+                alert('There are no unmarked members in this category.');
+                return;
+            }
+            alert(`${result.changedCount} unmarked member(s) were saved as “${fallbackStatus}” for ${cat.name}.`);
+        }
+
+        async function persistUnmarkedAttendance(date, categoryName, memberNames, fallbackStatus) {
+            const operation = attendanceWriteQueue.catch(() => {}).then(() => runTransaction(db, async transaction => {
+                const snapshot = await transaction.get(docRef);
+                const data = snapshot.exists() ? snapshot.data() : {};
+                const latestRecords = cloneRecords(data.records || []);
+                let record = latestRecords.find(item => item.date === date && item.category === categoryName);
+                if (!record) {
+                    record = { date, category: categoryName, attendances: [] };
+                    latestRecords.push(record);
+                }
+                if (!Array.isArray(record.attendances)) record.attendances = [];
+                let changedCount = 0;
+                memberNames.forEach(name => {
+                    const existing = record.attendances.find(item => item.name === name);
+                    const current = existing?.status || '';
+                    const isUnmarked = !current || current === 'None' || current === 'Not marked';
+                    if (!isUnmarked) return;
+                    if (existing) existing.status = fallbackStatus;
+                    else record.attendances.push({ name, status: fallbackStatus });
+                    changedCount++;
+                });
+                transaction.set(docRef, { records: latestRecords }, { merge: true });
+                return { records: latestRecords, changedCount };
+            }));
+            attendanceWriteQueue = operation.then(() => undefined, () => undefined);
+            try {
+                return await operation;
+            } catch (error) {
+                console.error('Error saving bulk attendance: ', error);
+                return null;
+            }
         }
 
         function resetAllPoints() {
@@ -1285,7 +2150,7 @@
                 const pass = prompt("Type 'CONFIRM' to proceed:");
                 if(pass === 'CONFIRM') {
                     records = [];
-                    saveDataToFirebase();
+                    saveDataToFirebase(['records']);
                     alert("All points and attendance records have been cleared.");
                 } else alert("Reset cancelled.");
             }
@@ -1325,11 +2190,14 @@
             const droppedCategoryIndex = parseInt(dropTarget.getAttribute('data-index'));
 
             if (draggedCategoryIndex !== null && draggedCategoryIndex !== droppedCategoryIndex) {
+                // Reorder array
                 const movedItem = categories.splice(draggedCategoryIndex, 1)[0];
                 categories.splice(droppedCategoryIndex, 0, movedItem);
                 
-                saveDataToFirebase();
+                saveDataToFirebase(['categories']);
                 renderCategories();
+                renderAttendanceChecklist();
+                renderCategoryButtons(); 
             }
             draggedCategoryIndex = null;
             return false;
@@ -1346,111 +2214,244 @@
             const list = document.getElementById('categoriesList');
             list.innerHTML = '';
 
-            categories.forEach((cat, index) => {
-                let badgeColor = '#A0AEC0'; 
-                if (cat.type === 'Present/Absent' || cat.type === 'Present/Late/Absent') badgeColor = '#48A9A6';
-                if (cat.type === 'Done Only') badgeColor = '#4299E1';
+            if (categories.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted); text-align:center; padding: 1.5rem 0;">No categories yet. Add the first ministry category above.</p>';
+                return;
+            }
 
-                let ptsDisplay = `${cat.points} pt${cat.points > 1 ? 's' : ''}`;
+            list.className = 'category-settings-list';
+            categories.forEach((cat, index) => {
+                let badgeColor = '#A0AEC0';
+                let description = 'Custom text or notes are entered for each member.';
+                if (cat.type === 'Present/Absent') {
+                    badgeColor = '#48A9A6';
+                    description = 'Mark members Present or Absent. Each tap saves instantly.';
+                }
                 if (cat.type === 'Present/Late/Absent') {
-                    ptsDisplay += ` | Late: ${cat.latePoints || 0} pt${(cat.latePoints || 0) !== 1 ? 's' : ''}`;
+                    badgeColor = '#48A9A6';
+                    description = 'Mark members Present, Late, or Absent. Each tap saves instantly.';
+                }
+                if (cat.type === 'Done Only') {
+                    badgeColor = '#4299E1';
+                    description = 'Check the box when the member completed this activity.';
                 }
 
                 list.innerHTML += `
-                    <div class="attendance-row draggable-item" draggable="true" data-index="${index}"
-                         ondragstart="handleDragStart(event)" 
-                         ondragover="handleDragOver(event)" 
-                         ondrop="handleDrop(event)" 
-                         ondragenter="handleDragEnter(event)" 
+                    <div class="category-setting-card draggable-item" draggable="true" data-index="${index}"
+                         ondragstart="handleDragStart(event)"
+                         ondragover="handleDragOver(event)"
+                         ondrop="handleDrop(event)"
+                         ondragenter="handleDragEnter(event)"
                          ondragleave="handleDragLeave(event)"
                          ondragend="handleDragEnd(event)">
-                        <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                            <span class="drag-handle" title="Drag to reorder">☰</span>
-                            <span class="member-name" style="margin-right: 10px;">${cat.name}</span>
-                            <span class="badge" style="margin-right: 6px; background: #E2E8F0; color: ${badgeColor};">${cat.type}</span>
-                            <span class="badge present">${ptsDisplay}</span>
+                        <div class="category-setting-main">
+                            <span class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⠿</span>
+                            <div class="category-setting-copy">
+                                <div class="category-setting-title">
+                                    <span>${cat.name}</span>
+                                    <span class="badge category-type-badge" style="background: #F4F7FA; color: ${badgeColor};">${cat.type === 'Present/Absent' ? 'Present / Absent' : cat.type === 'Present/Late/Absent' ? 'Present / Late / Absent' : cat.type}</span>
+                                </div>
+                                <p class="category-setting-description">${description}</p>
+                                <div class="category-score-summary">${escapeHTML(categoryScoreSummary(cat))}</div>
+                            </div>
                         </div>
-                        <div>
-                            <button class="btn-secondary" onclick="editCategory(${index})" style="margin-right: 0.5rem;">Edit Pts</button>
-                            <button class="btn-danger" onclick="deleteCategory(${index})">Del</button>
+                        <div class="category-setting-actions">
+                            <div class="category-move">
+                                <button type="button" class="btn-secondary" aria-label="Move ${escapeHTML(cat.name)} up" onclick="moveCategory(${index}, -1)" ${index === 0 ? 'disabled' : ''}>↑</button>
+                                <button type="button" class="btn-secondary" aria-label="Move ${escapeHTML(cat.name)} down" onclick="moveCategory(${index}, 1)" ${index === categories.length - 1 ? 'disabled' : ''}>↓</button>
+                            </div>
+                            <button class="btn-secondary" onclick="editCategory(${index})">Edit scores</button>
+                            <button class="btn-danger" onclick="deleteCategory(${index})">Delete</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
+        }
+
+        function toggleCategoryScoreFields() {
+            const type = document.getElementById('newCategoryType')?.value || 'Present/Absent';
+            const isStatusScored = isAttendanceStatusType(type);
+            document.getElementById('newStatusScoreFields')?.classList.toggle('hidden', !isStatusScored);
+            document.getElementById('newStandardScoreField')?.classList.toggle('hidden', isStatusScored);
+            document.getElementById('newCategoryLateScoreItem')?.classList.toggle('hidden', type !== 'Present/Late/Absent');
+        }
+
+        function toggleEditCategoryScoreFields() {
+            const type = document.getElementById('editCategoryType')?.value || 'Present/Absent';
+            const isStatusScored = isAttendanceStatusType(type);
+            document.getElementById('editStatusScoreFields')?.classList.toggle('hidden', !isStatusScored);
+            document.getElementById('editStandardScoreField')?.classList.toggle('hidden', isStatusScored);
+            document.getElementById('editCategoryLateScoreItem')?.classList.toggle('hidden', type !== 'Present/Late/Absent');
+            const description = isStatusScored
+                ? (type === 'Present/Absent' ? 'Set the points for Present and Absent.' : 'Set the points for Present, Late, and Absent.')
+                : 'Set how many points a completed activity or valid note earns.';
+            document.getElementById('categoryEditDescription').textContent = description;
         }
 
         function addCategory() {
             const nameInput = document.getElementById('newCategoryName');
-            const ptsInput = document.getElementById('newCategoryPoints');
-            const latePtsInput = document.getElementById('newCategoryLatePoints');
             const typeSelect = document.getElementById('newCategoryType');
-            
             const nameVal = nameInput.value.trim();
-            const ptsVal = parseInt(ptsInput.value) || 1;
-            const latePtsVal = parseInt(latePtsInput.value) || 0;
             const typeVal = typeSelect.value;
+            const presentRaw = document.getElementById('newCategoryPresentPoints').value;
+            const lateRaw = document.getElementById('newCategoryLatePoints').value;
+            const absentRaw = document.getElementById('newCategoryAbsentPoints').value;
+            const standardRaw = document.getElementById('newCategoryPoints').value;
+            if (!nameVal) {
+                alert('Enter a category name first.');
+                nameInput.focus();
+                return;
+            }
+            if (categories.find(c => c.name.toLowerCase() === nameVal.toLowerCase())) {
+                alert('Category already exists!');
+                return;
+            }
+            if (isAttendanceStatusType(typeVal) && [presentRaw, absentRaw].some(value => value === '' || !Number.isFinite(Number(value)) || Number(value) < 0)) {
+                alert('Enter valid point values of 0 or more for Present and Absent.');
+                return;
+            }
+            if (typeVal === 'Present/Late/Absent' && (lateRaw === '' || !Number.isFinite(Number(lateRaw)) || Number(lateRaw) < 0)) {
+                alert('Enter a valid point value of 0 or more for Late.');
+                return;
+            }
+            if (!isAttendanceStatusType(typeVal) && (standardRaw === '' || !Number.isFinite(Number(standardRaw)) || Number(standardRaw) < 0)) {
+                alert('Enter a valid point value of 0 or more.');
+                return;
+            }
 
-            if (nameVal && !categories.find(c => c.name.toLowerCase() === nameVal.toLowerCase())) {
-                categories.push({ name: nameVal, points: ptsVal, latePoints: latePtsVal, type: typeVal });
-                nameInput.value = '';
-                ptsInput.value = '1';
-                latePtsInput.value = '0';
-                typeSelect.value = 'Present/Absent';
-                document.getElementById('newCategoryLatePoints').style.display = 'none';
-                saveDataToFirebase();
-            } else if (nameVal) alert("Category already exists!");
+            const presentPoints = toPoint(presentRaw, 1);
+            const latePoints = typeVal === 'Present/Late/Absent' ? toPoint(lateRaw, 0.5) : toPoint(lateRaw, presentPoints);
+            const absentPoints = toPoint(absentRaw, 0);
+            const standardPoints = toPoint(standardRaw, 1);
+            categories.push({
+                name: nameVal,
+                type: typeVal,
+                responseTypeVersion: 2,
+                points: isAttendanceStatusType(typeVal) ? presentPoints : standardPoints,
+                presentPoints,
+                latePoints,
+                absentPoints
+            });
+            nameInput.value = '';
+            document.getElementById('newCategoryPresentPoints').value = '1';
+            document.getElementById('newCategoryLatePoints').value = '0.5';
+            document.getElementById('newCategoryAbsentPoints').value = '0';
+            document.getElementById('newCategoryPoints').value = '1';
+            typeSelect.value = 'Present/Absent';
+            toggleCategoryScoreFields();
+            renderCategories();
+            renderAttendanceChecklist();
+            saveDataToFirebase(['categories']).then(saved => {
+                if (!saved) alert('The category could not be saved. Check your connection and try again.');
+            });
         }
 
         function editCategory(index) {
             const cat = categories[index];
-            const newPtsStr = prompt(`Enter new point value for Present in ${cat.name}:`, cat.points);
-            
-            if (newPtsStr !== null) {
-                const newPts = parseInt(newPtsStr);
-                if (!isNaN(newPts) && newPts >= 0) {
-                    categories[index].points = newPts;
+            if (!cat) return;
+            document.getElementById('editCategoryIndex').value = String(index);
+            document.getElementById('categoryEditTitle').textContent = `Edit category · ${cat.name}`;
+            document.getElementById('editCategoryType').value = cat.type || 'Present/Absent';
+            document.getElementById('editCategoryPresentPoints').value = formatPoints(toPoint(cat.presentPoints, toPoint(cat.points, 1)));
+            // Legacy categories used the same category score for Late; retain it unless configured otherwise.
+            document.getElementById('editCategoryLatePoints').value = formatPoints(toPoint(cat.latePoints, toPoint(cat.points, 1)));
+            document.getElementById('editCategoryAbsentPoints').value = formatPoints(toPoint(cat.absentPoints, 0));
+            document.getElementById('editCategoryPoints').value = formatPoints(toPoint(cat.points, 1));
+            toggleEditCategoryScoreFields();
+            const dialog = document.getElementById('categoryEditDialog');
+            if (typeof dialog.showModal === 'function') dialog.showModal();
+            else alert('This browser does not support the category score editor. Please use a recent browser.');
+        }
 
-                    if (cat.type === 'Present/Late/Absent') {
-                        const newLatePtsStr = prompt(`Enter new point value for Late in ${cat.name}:`, cat.latePoints || 0);
-                        if (newLatePtsStr !== null) {
-                            const newLatePts = parseInt(newLatePtsStr);
-                            if (!isNaN(newLatePts) && newLatePts >= 0) {
-                                categories[index].latePoints = newLatePts;
-                            }
-                        }
-                    }
+        function closeCategoryEditor() {
+            const dialog = document.getElementById('categoryEditDialog');
+            if (dialog?.open) dialog.close();
+        }
 
-                    saveDataToFirebase();
-                } else alert("Please enter a valid number.");
+        async function saveCategoryScores() {
+            const index = Number(document.getElementById('editCategoryIndex').value);
+            const cat = categories[index];
+            if (!cat) return closeCategoryEditor();
+            const type = document.getElementById('editCategoryType').value;
+            const isStatusScored = isAttendanceStatusType(type);
+
+            if (isStatusScored) {
+                const presentRaw = document.getElementById('editCategoryPresentPoints').value;
+                const lateRaw = document.getElementById('editCategoryLatePoints').value;
+                const absentRaw = document.getElementById('editCategoryAbsentPoints').value;
+                const invalidMainPoints = [presentRaw, absentRaw].some(value => value === '' || !Number.isFinite(Number(value)) || Number(value) < 0);
+                const invalidLatePoints = type === 'Present/Late/Absent' && (lateRaw === '' || !Number.isFinite(Number(lateRaw)) || Number(lateRaw) < 0);
+                if (invalidMainPoints || invalidLatePoints) {
+                    alert(type === 'Present/Absent'
+                        ? 'Enter valid point values of 0 or more for Present and Absent.'
+                        : 'Enter valid point values of 0 or more for Present, Late, and Absent.');
+                    return;
+                }
+                cat.presentPoints = Number(presentRaw);
+                // Do not erase the existing Late score when switching to two-status controls; old Late
+                // records remain historically scorable if any exist.
+                if (type === 'Present/Late/Absent') cat.latePoints = Number(lateRaw);
+                cat.absentPoints = Number(absentRaw);
+                cat.points = cat.presentPoints;
+            } else {
+                const pointsRaw = document.getElementById('editCategoryPoints').value;
+                if (pointsRaw === '' || !Number.isFinite(Number(pointsRaw)) || Number(pointsRaw) < 0) {
+                    alert('Enter a valid point value of 0 or more.');
+                    return;
+                }
+                cat.points = Number(pointsRaw);
             }
+            cat.type = type;
+            cat.responseTypeVersion = 2;
+
+            closeCategoryEditor();
+            renderCategories();
+            renderAttendanceChecklist();
+            renderGlobalStats();
+            const saved = await saveDataToFirebase(['categories']);
+            if (!saved) alert('The score settings could not be saved. Check your connection and try again.');
+        }
+
+        function moveCategory(index, direction) {
+            const target = index + direction;
+            if (target < 0 || target >= categories.length) return;
+            const [moved] = categories.splice(index, 1);
+            categories.splice(target, 0, moved);
+            renderCategories();
+            renderAttendanceChecklist();
+            saveDataToFirebase(['categories']).then(saved => {
+                if (!saved) alert('The new order could not be saved. Check your connection and try again.');
+            });
         }
 
         function deleteCategory(index) {
             if (confirm("Delete this category?")) {
                 categories.splice(index, 1);
-                saveDataToFirebase();
+                saveDataToFirebase(['categories']);
             }
         }
 
         function renderMembers() {
             const list = document.getElementById('membersList');
-            list.innerHTML = '';
-            let sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
-
-            sortedMembers.forEach((member) => {
-                list.innerHTML += `
-                    <div class="attendance-row">
-                        <div>
-                            <span class="member-name">${member.name}</span>
-                            <span class="member-code">Code: ${member.code}</span>
-                        </div>
-                        <div>
-                            <button class="btn-secondary" onclick="editMember('${member.code}')" style="margin-right: 0.5rem;">Edit</button>
-                            <button class="btn-danger" onclick="deleteMember('${member.code}')">Del</button>
-                        </div>
+            const q = (document.getElementById('memberSearch')?.value || '').trim().toLowerCase();
+            const scores = calculatePoints();
+            const shown = [...members].sort((a, b) => a.name.localeCompare(b.name))
+                .filter(m => !q || `${m.name} ${m.code}`.toLowerCase().includes(q));
+            document.getElementById('memberCount').textContent = `${shown.length} of ${members.length}`;
+            list.innerHTML = shown.length ? shown.map(m => `
+                <div class="member-card">
+                    <span class="avatar" aria-hidden="true">${initials(m.name)}</span>
+                    <div class="member-card-main">
+                        <div class="member-name">${escapeHTML(m.name)}</div>
+                        <button type="button" class="code-chip" onclick="copyText('${escapeHTML(m.code)}', 'Code copied')" title="Copy code">${escapeHTML(m.code)}<span>Copy</span></button>
                     </div>
-                `;
-            });
+                    <div class="member-card-pts">${formatPoints(scores[m.code])}<small>pts</small></div>
+                    <div class="member-card-actions">
+                        <button class="btn-secondary" onclick="copyLink('${escapeHTML(m.code)}')">Copy link</button>
+                        <button class="btn-secondary" onclick="editMember('${escapeHTML(m.code)}')">Edit</button>
+                        <button class="btn-danger" onclick="deleteMember('${escapeHTML(m.code)}')">Delete</button>
+                    </div>
+                </div>`).join('')
+                : `<p class="empty">${members.length ? 'No members match your search.' : 'No members yet. Add the first one above.'}</p>`;
         }
 
         function addMember() {
@@ -1458,13 +2459,39 @@
             const val = input.value.trim();
 
             if (val && !members.find(m => m.name.toLowerCase() === val.toLowerCase())) {
-                members.push({ name: val, code: generateCode() });
+                let newCode;
+                do { newCode = generateCode(); } while (members.some(m => m.code === newCode));
+                members.push({ name: val, code: newCode });
+                alert(`${val} added. Their code is ${newCode}`);
                 input.value = '';
-                saveDataToFirebase();
+                renderMembers();
+                saveDataToFirebase(['members']);
             } else if (val) alert("Member already exists!");
         }
 
-        function editMember(code) {
+        async function persistMemberRename(oldName, newName) {
+            const operation = attendanceWriteQueue.catch(() => {}).then(() => runTransaction(db, async transaction => {
+                const snapshot = await transaction.get(docRef);
+                const data = snapshot.exists() ? snapshot.data() : {};
+                const nextRecords = cloneRecords(data.records || []);
+                nextRecords.forEach(record => {
+                    (record.attendances || []).forEach(attendance => {
+                        if (attendance.name === oldName) attendance.name = newName;
+                    });
+                });
+                transaction.set(docRef, { records: nextRecords }, { merge: true });
+                return nextRecords;
+            }));
+            attendanceWriteQueue = operation.then(() => undefined, () => undefined);
+            try {
+                return await operation;
+            } catch (error) {
+                console.error('Error updating historical member names: ', error);
+                return null;
+            }
+        }
+
+        async function editMember(code) {
             const member = members.find(m => m.code === code);
             if (!member) return;
 
@@ -1480,40 +2507,53 @@
                 }
 
                 member.name = val;
-
-                records.forEach(r => {
-                    r.attendances.forEach(a => {
-                        if (a.name === oldName) a.name = val;
-                    });
-                });
-
-                saveDataToFirebase();
-                alert(`Member updated to ${val}`);
+                renderMembers();
+                const membersSaved = await saveDataToFirebase(['members']);
+                const renamedRecords = await persistMemberRename(oldName, val);
+                if (Array.isArray(renamedRecords)) records = renamedRecords;
+                renderGlobalStats();
+                if (isAdmin) renderLeaderboard(currentSort);
+                if (!membersSaved || !Array.isArray(renamedRecords)) {
+                    alert('The member name was changed locally, but one or more Firebase updates failed. Check your connection and refresh before continuing.');
+                } else {
+                    alert(`Member updated to ${val}`);
+                }
             }
         }
 
         function deleteMember(code) {
             if (confirm("Remove this person? Their historical attendance will remain, but they won't appear on new lists.")) {
                 members = members.filter(m => m.code !== code);
-                saveDataToFirebase();
+                renderMembers();
+                saveDataToFirebase(['members']);
             }
-        }
-        
-        function toggleShowDatesSetting(checkbox) {
-            showDatesToUsers = checkbox.checked;
-            saveDataToFirebase();
         }
 
         // --- BIND GLOBALS FOR HTML ONCLICK EVENTS ---
         window.toggleAdmin = toggleAdmin;
+        window.shiftAttDate = shiftAttDate;
+        window.setAttDateToday = setAttDateToday;
+        window.selectAttCategory = selectAttCategory;
+        window.setAttFilter = setAttFilter;
+        window.handleAttSearchKey = handleAttSearchKey;
+        window.copyText = copyText;
+        window.copyLink = copyLink;
+        window.showAllHistory = showAllHistory;
         window.switchAdminTab = switchAdminTab;
         window.lookupRecord = lookupRecord;
         window.renderLeaderboard = renderLeaderboard;
-        window.saveAttendance = saveAttendance;
+        window.autoSaveIndividualStatus = autoSaveIndividualStatus;
+        window.markUnmarkedAs = markUnmarkedAs;
+        window.filterAttendanceMembers = filterAttendanceMembers;
         window.resetAllPoints = resetAllPoints;
         window.addCategory = addCategory;
         window.editCategory = editCategory;
+        window.closeCategoryEditor = closeCategoryEditor;
+        window.saveCategoryScores = saveCategoryScores;
+        window.toggleCategoryScoreFields = toggleCategoryScoreFields;
+        window.toggleEditCategoryScoreFields = toggleEditCategoryScoreFields;
         window.deleteCategory = deleteCategory;
+        window.moveCategory = moveCategory;
         window.addMember = addMember;
         window.editMember = editMember;
         window.deleteMember = deleteMember;
@@ -1523,8 +2563,6 @@
         window.handleDragLeave = handleDragLeave;
         window.handleDrop = handleDrop;
         window.handleDragEnd = handleDragEnd;
-        window.toggleShowDatesSetting = toggleShowDatesSetting;
-        window.autoSaveCheckbox = autoSaveCheckbox;
 
     </script>
 </body>
